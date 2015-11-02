@@ -1,0 +1,23 @@
+%!TEX TS-program = pdflatexmk
+
+%\documentclass{sig-alt-hotnetscr}
+\documentclass[12pt]{article}
+
+\input{setup}
+
+\begin{document}
+\clubpenalty=10000
+\widowpenalty = 10000
+\thispagestyle{empty}
+
+\input{title}
+\input{protocol}
+\input{discussion}
+
+\bibliographystyle{abbrv}
+
+\bibliography{bibinfo2}
+
+%\endgroup
+
+\end{document}
