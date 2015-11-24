@@ -1,69 +1,73 @@
 \section{Protocols For Privacy-Preserving Contact Chaining}
+\label{sec:proto}
 
-This is a candidate protocol for privacy-preserving contact chaining. The desired inputs, outputs, and security assumptions are given below.
+This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in sections \ref{sec:proto1} and \ref{sec:proto2}.
 
 \subsection{Inputs and Parties to the Protocol}
 
 There are two types of parties in this protocol: Telecommunications companies (telecoms) and government agencies interested in performing lawful contact-chaining (agencies). The protocol is a function of all parties' data.
 
-The telecoms jointly hold an undirected call graph $G=(V,E)$. Each telecom knows only a subset of the edges $E$. In this graph, the vertices in $V$ are labeled with the phone numbers they represent. $E$ contains an edge between $a$ and $b$ if and only if phone number $a$ has dialed phone number $b$ or vice versa within some window of time. The set of existing phone numbers $V$ is public information. Additionally, each phone number $v$ is served by exactly one telecom. We assume all parties to the protocol know (or can discover) which telecom serves which phone number. Each telecom keeps records of all phone calls made by phones they serve, including calls made to phone numbers served by other telecoms. The subgraph known by telecom $T$ is $G_T=(V, E_T)$ where $E_T$ is the set of edges $(a, b)$ such that $a$ or $b$ is a phone number served by $T$. Henceforth, for any phone number $a$, let $T(a)$ be the telecom that serves $a$.
+The telecoms jointly hold an undirected call graph $G=(V,E)$. Each telecom knows only a subset of the edges $E$. $V$ contains vertices labeled with the phone numbers they represent, and $E$ contains an edge between $a$ and $b$ if and only if phone number $a$ has dialed phone number $b$ or vice versa within some window of time. The set of existing phone numbers $V$ is public information. Additionally, each phone number $v$ is served by exactly one telecom. We assume all parties to the protocol know (or can discover) which telecom serves which phone number. Each telecom keeps records of all phone calls made by phones they serve, including calls made to phone numbers served by other telecoms. The subgraph known by telecom $T$ is $G_T=(V, E_T)$ where $E_T$ is the set of edges $(a, b)$ such that $a$ or $b$ is a phone number served by $T$. Henceforth, for any phone number $a$, let $T(a)$ be the telecom that serves $a$.
 
-In addition to the public knowledge about $V$ and which telecom serves which phone number, the agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant must include at least the information $(x, k)$, where $x$ is a target phone number and $k$ is a (small) distance from $x$. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$.
-
-The warrant must therefore also specify additional mechanisms for limiting the scope of the investigation. We specifically require two additional values to be part of the warrant. The first is a branching limit $l$. If a vertex has degree greater than $l$, the agencies will not consider paths through that vertex in determining whether there is a path of length at most $k$ between two vertices. This mechanism prevents very busy phone numbers, such as that of the pizza restaurant or a taxi service, from introducing very many unrelated phone numbers into the eventual data set. The second is $m$, a maximum number of encrypted users that the agencies are willing to consider in total. Once the agencies have added $m$ encrypted phone numbers to their output, they halt their investigation. This sets an absolute upper limit on the number of users whose data can be captured by contact chaining.
+In addition to the public knowledge about $V$ and which telecom serves which phone number, the agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $\mx$). $x$ is a target phone number. $k$ is a (small) distance from $x$, the distance at which the agencies wish to consider chained contacts. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$. Therefore, the warrant also includes $\mx$, a maximum number of users whose information the protocol can capture. We will use a a ``budget'' mechanism based on the capacity assignment mechanism of~\cite{tmls09}. We treat $\mx$ as a \emph{budget} of users to be searched. This budget will, at each step in the protocol, be subdivided among the neighbors of the vertex being considered - initially $x$, then $x$'s neighbors, etc. We specify the protocol in full in sections~\ref{sec:proto1} and \ref{sec:proto2}.
 
 \subsection{Security Assumptions}
 
-We treat all parties to this protocol as honest-but-curious. All telecoms and agencies must have a published public encryption key and private decryption key. The agencies' keys must be for a commutative cryptosystem (i.e. ElGamal). The agencies must also each have private signing keys and public verification keys.
+We make a few assumptions about existing cryptographic infrastructure. All telecoms and agencies must have a published public encryption key and private decryption key. The agencies' keys must be for a commutative cryptosystem (i.e. ElGamal). The agencies must also each have private signing keys and public verification keys.
 
-We may assume for this protocol that one of the agencies in particular, which we may call the ``investigating agency'', is responsible for all communication to and from every telecom. The investigating agency itself communicates with one or more other agencies, which we call ``oversight agencies''. Oversight agencies are responsible for approving warrants, collecting statistics and other information about how often the protocol is run, and enforcing the protocol's scope limiting mechanisms. 
+We may assume for this protocol that one of the agencies in particular, which we may call the ``investigating agency'', is responsible for all communication to and from every telecom. The investigating agency itself communicates with one or more other agencies, which we call ``oversight agencies''. Oversight agencies are responsible for approving warrants, collecting statistics and other information about how often the agencies perform a contact-chaining search, and enforcing the protocol's scope limiting mechanisms. 
 
 In the protocol below, we refer to ``the agencies'' sending messages to one or more telecoms, for clarity. What we mean by this is that the investigating agency creates the message, gets a signature on the message from each oversight agency, and sends the message with all signatures to the telecom. If a telecom receives a message without signatures from all oversight agencies, it rejects the message as invalid.
 
 \subsection{Desired Outputs and Security Properties}
 
-The desired output of the protocol is for the agencies to learn an \emph{encryption} of the set of phone numbers within distance $k$ of the targeted phone $x$ in the call graph. Every phone number in this set must be encrypted with each of the agencies' public keys. The encrypted set may exclude a phone number if the only paths of length at most $k$ connecting it to $x$ go through vertices with degree greater than the limit $l$, but then (encryptions of) all such high-degree vertices must also noted in the output. The agencies should all have the same output.
+The desired output of the protocol is for the agencies to learn an \emph{encryption} of the set of phone numbers within distance $k$ of the targeted phone $x$ in the call graph. Every phone number in this set must be encrypted with each of the agencies' public keys. The encrypted set may exclude some numbers if the upper bound $\mx$ is less than the total size of the neighborhood of radius $k$ around $x$. The agencies should all have the same output.
 
-The telecoms do not expect any output from this protocol.
+The telecoms should not learn the agency's output. Instead, each telecom's output should contain only a list of which of the phone numbers it serves were sent to the government agencies. This allows the telecoms to play an accountability role in this protocol. The government may have an interest in keeping the telecoms from knowing which of their clients were surveilled; we discuss this in section~\ref{sec:oblivious}.
 
 With the encryptions of these phone numbers, the agencies can then act as appropriate to further investigate them. In particular, the encrypted set of phone numbers can be used as an input into a privacy-preserving set intersection protocol, as in~\cite{bandits}.
+
+In particular, we assume that all telecoms honestly follow the protocol and submit accurate information about the phone numbers they serve and the records they keep. We assume they send no telecom ciphertexts or agency ciphertexts to the agencies except when called for in the protocol. In practice, simple investigative tools commonly in use by the police allow law enforcement agencies to gather information about the phone call history of a suspect with a valid warrant, but such information cannot generally be used for contact chaining purposes.
 
 Below, we present two versions of our protocol. In the basic version, the agencies and telecoms learn some additional information. Specifically, the agencies learn the provider of each phone number in the encrypted set, and a set of encrypted edges between vertices in this set; that is, they learn pairs of the form $(\tilde{a}, \tilde{b})$, where $\tilde{a}$ and $\tilde{b}$ both appear in the agencies' output and $(a, b)\in E$. The telecoms to learn which of the phone numbers it serves appear in the agencies' output, and the distance of each of those phone numbers from the target phone number $x$.
 
 In section \ref{sec:proto2}, we will present a version of the protocol in which the agency \emph{does not} learn any additional information.
 
-The agencies collectively learn \emph{no} information about the edge set $E$ except what is implied by the output. Furthermore, as long as at least one agency does not collude with the others, the remaining agencies must not be able to learn any of the phone numbers that appear in encrypted form in the output, unless it is implied by the size of the encrypted output and the leaked service information.
+As long as all parties honestly follow the protocol, the agencies collectively learn \emph{no} information about the edge set $E$ except what is implied by the output. Furthermore, as long as at least one agency follows the protocol honestly and does not collude with the others, the remaining agencies cannot learn any of the phone numbers that appear in encrypted form in the output (unless implied by the size of the encrypted output and the leaked service information), nor can the colluding agencies cause a phone number not within distance $k$ of target $x$ to appear in the output, even in encrypted form. Telecoms have the ability to send additional information about their users to agencies or other telecoms at any time, but we assume they will not wish to do so, since they have a business interest to protect user information and comply with the law. We assume that all telecoms follow the protocol honestly.
 
 \subsection{First Protocol: Leaks Telecom Ownership}
 \label{sec:proto1}
 
-The protocol below amounts to a distributed breadth-first search of the social graph run by the agencies making queries of the telecoms. However, all messages the agencies receive from the telecoms will be encrypted. The only information that is leaked in the clear to the agencies is \emph{ownership information} about the encrypted phone numbers - specifically, which telecoms own the vertices in the encrypted output.
+The protocol below amounts to a distributed breadth-first search of the social graph run by the agencies making queries of the telecoms. However, all messages the agencies receive from the telecoms will be encrypted. The only other information the agencies learn the size of the output and \emph{ownership information} about the encrypted phone numbers - specifically, which telecoms own the vertices in the encrypted output.
 
 Let $\Enc_T(m)$ be the encryption of message $m$ under telecom $T$'s public key. Call such an encryption a \emph{telecom ciphertext}. Let $\Enc_\mathcal{A}(m)$ be the encryption of $m$ under the public keys of all agencies, and call such an encryption an \emph{agency ciphertext}.
 
-To manage the breadth-first search, the agencies (or at least the investigating agency) will maintain a queue $\mathbf{Q}$, containing vertices yet to explore. $\mathbf{Q}$ contains triples for unexplored vertices $a$ of the form $(\Enc_{T(a)}(a), T(a), j)$. These tuples contain the telecom ciphertext for $a$, a record of which telecom owns $a$, and an integer $j$ indicating the distance to $a$ from the target vertex.
+To manage the breadth-first search, the agencies (or at least the investigating agency) will maintain a queue $\mathbf{Q}$, containing vertices yet to explore. $\mathbf{Q}$ contains tuples for unexplored vertices $a$ of the form $(\Enc_{T(a)}(a), T(a), j, U)$. These tuples contain the telecom ciphertext for $a$, a record of which telecom owns $a$, an integer $j$ indicating the remaining distance out to which neighbors can be chained from $a$, and another integer $U$ indicating the remaining budget of users.
 
-The agencies will represent their output in the form of two lists: $\mathbf{C}$, containing agency ciphertexts collected as a result of the contact chaining, and $\mathbf{H}$, containing high-degree vertices through which the agencies decided not to chain, along with their distances from the target. The agencies may, after the protocol, decide to decrypt the phone numbers in $\mathbf{H}$, and may then continue chaining through them by running the contact-chaining protocol starting with one of those phone numbers.
+At the beginning of the protocol, the agencies assign the entire budget $U=\mx$ to the target vertex $x$. When the agencies explore $x$ and add its neighbors to $Q$, they decrease the budget by 1 and then subdivide it equally among each of $x$'s neighbors. Each neighbor $a$ receives a new budget $U=(\mx-1)/\de(x)$. The process continues thus. As the agencies explore each new vertex, they share its remaining budget among each of its unexplored neighbors. If a vertex's remaining budget is less than the number of neighbors it has, the agencies do not add its neighbors $\mathbf{Q}$ (but keep that vertex itself in their output).
+
+The agencies will represent their output in the form of a list $\mathbf{C}$, containing agency ciphertexts. Each telecom $T$ will represent its output in the form of a list $\mathbf{L}_T$, listing plaintext users served by that telecom whose information the agencies requested.
 
 The protocol is as follows:
 
 \bce
-\item The agencies start by agreeing upon a warrant $(x, k, l)$, where $x$ is the target phone number, $k$ is a maximum distance, and $l$ is an upper limit on the degree of vertices to chain through. They encrypt $x$ under the public key of $T(x)$.
-\item The agencies initialize a queue $\mathbf{Q}$. Initially, $\mathbf{Q}$ contains only the triple $(\Enc_{T(x)}(x), T(x), 0)$.
-\item The agencies initialize the output lists $\mathbf{C}$ and $\mathbf{H}$ to be empty.
+\item The agencies start by agreeing upon a warrant $(x, k, \mx)$, where $x$ is the target phone number, $k$ is a maximum distance, and $\mx$ is an upper limit on the number of users whose information they may collect. They encrypt $x$ under the public key of $T(x)$.
+\item The agencies initialize a queue $\mathbf{Q}$. Initially, $\mathbf{Q}$ contains only the triple $(\Enc_{T(x)}(x), T(x), k, \mx)$.
+\item The agencies initialize the output list $\mathbf{C}$ to be empty.
+\item Each telecom $T$ initializes its output list $\mathbf{L}_T$ to be empty.
 \item While $\mathbf{Q}$ is not empty, do the following:
 \bce
-\item \label{proto1:top-of-loop} The agencies dequeue $(\Enc_{T(a)}(a), T(a), j)$ from $\mathbf{Q}$. They send the telecom ciphertext $\Enc_{T(a)}(a)$ to $T(a)$.
-\item $a$'s provider, $T(a)$, decrypts $a$ from its telecom ciphertext.
+\item \label{proto1:top-of-loop} The agencies dequeue $(\Enc_{T(a)}(a), T(a), j, U)$ from $\mathbf{Q}$. They send the pair ($\Enc_{T(a)}(a), j)$ to $T(a)$.
+\item $a$'s provider, $T(a)$, decrypts $a$ from its telecom ciphertext. It adds $a$ to $\mathbf{L}_T$.
 \item \label{proto1:first-send} $T(a)$ encrypts $a$ under the agencies' public keys, and sends $\Enc_\mathcal{A}(a)$ to the agencies.
-\item The agencies add $\Enc_\mathcal{A}(a)$ to $\mathbf{C}$. If $j=k$, they send the message ``DONE'' to $T(a)$, and go to step~\ref{proto1:top-of-loop}.
-\item Otherwise, the agencies send the message ``CONTINUE'' to $T(a)$.
-\item Upon receiving the message ``CONTINUE'', $T(a)$ encrypts each neighbor $b$ of $a$ under the public key of $T(b)$, creating a telecom ciphertext for $b$.
-\item \label{proto1:second-send} $T(a)$ sends all telecom ciphertexts for $a$'s neighbors to the agencies, in the form of pairs $(\Enc_{T(b)}(b), T(b))$.
-\item If the agencies receive more than $l$ ciphertexts in the previous step (and $j\neq 0$), they add $(\Enc_\mathcal{A}(a), j)$ to $\mathbf{H}$. They discard the telecom ciphertexts (i.e., agencies refuse to sign the ciphertexts or send them on to the telecoms).
-\item Otherwise, for each telecom ciphertext received, the agencies add the tuple $(\Enc_{T(b)}(b), T(b), j+1)$ to $\mathbf{Q}$.
+\item If $j=0$, $T(a)$ is done. Go to step \ref{proto1:receive}.
+\item Otherwise, $T(a)$ encrypts each neighbor $b$ of $a$ under the public key of $T(b)$, creating a telecom ciphertext for $b$. $T(a)$ excludes $b$ if it already appears in $\mathbf{L}_T$.
+\item \label{proto1:second-send} $T(a)$ sends the number of ciphertexts generated this way, $\de(a)$, as well as all telecom ciphertexts generated in the previous step, to the agencies. $T(a)$ sends the ciphertexts in the form of pairs $(\Enc_{T(b)}(b), T(b))$.
+\item \label{proto1:receive} The agencies add $\Enc_\mathcal{A}(a)$ to $\mathbf{C}$.
+\item If $\de(a)\geq U$, the agencies discard all telecom ciphertexts received for $a$'s neighbors (i.e., oversight agencies refuse to sign the ciphertexts, and the investigating agency does not send them on to the telecoms).
+\item Otherwise, the agencies choose $(U-1)/\de(a)$ as the remaining budget for each new vertex to explore, subtracting 1 to account for $a$ itself and dividing the remaining budget equally. For each telecom ciphertext received, the agencies add the tuple $(\Enc_{T(b)}(b), T(b), j-1, (U-1)/\de(a))$ to $\mathbf{Q}$.
 \ece
-\item The agencies' final outputs are the lists $\mathbf{C}$ and $\mathbf{H}$.
+\item The agencies' final output is the list $\mathbf{C}$. Each telecom $T$'s final output is $\mathbf{L}_T$.
 \ece
 
 \subsection{Revised Contact Chaining Protocol}
@@ -71,29 +75,32 @@ The protocol is as follows:
 
 The previous version of the protocol allows agencies to learn which telecoms own the phone numbers in its encrypted output. This subsection presents a modification of the previous version of the protocol, which uses a DC-nets-based \emph{anonymity protocol} to hide this information from the agencies.
 
-An anonymity  protocol is run between a number of parties, some of which have a message to send. At the end of the protocol, all parties must learn all messages sent, but no party other than the sender of any given message learns which party sent that message. Dissent~\cite{dissent} and Verdict~\cite{verdict} both satisfy our requirements, although they are more powerful than we need here, since we assume all telecoms are honest-but-curious.
+An anonymity protocol is run between a number of parties, some of which have a message to send. At the end of the protocol, all parties must learn all messages sent, but no party other than the sender of any given message learns which party sent that message. Dissent~\cite{dissent} and Verdict~\cite{verdict} both satisfy our requirements, although they are more powerful than we need here, since we assume all telecoms are honest-but-curious.
 
 We can use an anonymity protocol to allow the correct telecom to respond anonymously in steps \ref{proto1:first-send} and \ref{proto1:second-send} in the protocol above. This removes the need for the agencies to know which telecom owns which ciphertext.
 
-Now we can present the following modified protocol. This protocol uses the same data structures as in section~\ref{sec:proto1}, except that $\mathbf{Q}$ now contains pairs $(\Enc_{T(a)}(a), j)$ for unexplored vertices $a$.
+Now we can present the following modified protocol. This protocol uses the same data structures as in section~\ref{sec:proto1}, except that $\mathbf{Q}$ now contains triples $(\Enc_{T(a)}(a), j, U)$ for unexplored vertices $a$ (omitting the identity of $T(a)$.
 
 \bce
-\item The agencies start by agreeing upon a warrant $(x, k, l)$, where $x$ is the target phone number, $k$ is a maximum distance, and $l$ is an upper limit on the degree of vertices to chain through. They encrypt $x$ under the public key of $T(x)$.
-\item The agencies initialize a queue $\mathbf{Q}$. Initially, $\mathbf{Q}$ contains only the pair $(\Enc_{T(x)}(x), 0)$.
-\item The agencies initialize the output lists $\mathbf{C}$ and $\mathbf{H}$ to be empty.
+\item The agencies start by agreeing upon a warrant $(x, k, \mx)$, where $x$ is the target phone number, $k$ is a maximum distance, and $\mx$ is an upper limit on the number of users whose information they may collect. They encrypt $x$ under the public key of $T(x)$.
+\item The agencies initialize a queue $\mathbf{Q}$. Initially, $\mathbf{Q}$ contains only the triple $(\Enc_{T(x)}(x), T(x), 0, \mx)$.
+\item The agencies initialize the output list $\mathbf{C}$ to be empty.
+\item Each telecom $T$ initializes its output lists $\mathbf{L}_T$ to be empty.
 \item While $\mathbf{Q}$ is not empty, do the following:
 \bce
-\item \label{proto2:dequeue} The agencies dequeue a number of pairs $(\Enc_{T(a)}(a), j)$ from $\mathbf{Q}$. They send each telecom ciphertext $\Enc_{T(a)}(a)$ to all telecoms, along with the message ``CONTINUE'' if $j<k$, or the message ``DONE'' if not.
-\item All telecoms attempt to decrypt the telecom ciphertexts. For each vertex $a$, $a$'s provider, $T(a)$, will decrypt $a$. 
-\item $T(a)$ encrypts $a$ under the agencies' public keys to produce the agency ciphertext $\Enc_\mathcal{A}(a)$.
-\item If $T(a)$ got the message ``CONTINUE'' along with the ciphertext, it also encrypts each neighbor $b$ of $a$ under the public key of $T(b)$, creating a telecom ciphertext for $b$.
-\item All parties to this protocol engage in an anonymity protocol. Each telecom's message in the protocol is the set of all agency ciphertexts and all telecom ciphertexts produced in the previous two steps. If the telecom did not produce any messages in the previous two steps, it participates in the protocol but sends no message.
-\item When the anonymity protocol is complete, the agencies receive all the ciphertexts.
-\item For each agency ciphertext $\Enc_\mathcal{A}(a)$ the agencies receive, they add that ciphertext to $\mathbf{C}$.
-\item If the agencies receive more than $l$ telecom ciphertexts for any vertex $a$ in the previous step (and $j\neq 0$), they add $(\Enc_\mathcal{A}(a), j)$ to $\mathbf{H}$. They discard the associated telecom ciphertexts (i.e., agencies refuse to sign the ciphertexts or send them on to the telecoms).
-\item Otherwise, for each telecom ciphertext received, the agencies add the pair $(\Enc_{T(b)}(b), j+1)$ to $\mathbf{Q}$.
+\item \label{proto2:dequeue} The agencies dequeue a triple $(\Enc_{T(a)}(a), j, U)$ from $\mathbf{Q}$. They send the pair $(\Enc_{T(a)}(a), j)$ to all telecoms.
+\item All telecoms attempt to decrypt $\Enc_T(a)(a)$. Only $T(a)$ will be able to do so.
+\item $T(a)$ adds $a$ to $\mathbf{L}_T$.
+\item \label{proto2:agencycipher} $T(a)$ encrypts $a$ under the agencies' public keys, producing the agency ciphertext $\Enc_\mathcal{A}(a)$.
+\item \label{proto2:telecomcipher} If $j>0$, $T(a)$ encrypts each neighbor $b$ of $a$ under the public key of $T(b)$, creating a telecom ciphertext for $b$. $T(a)$ excludes $b$ if it already appears in $\mathbf{L}_T$.
+\item \label{proto2:anon} All parties to this protocol engage in the anonymity protocol. $T(a)$ sends an anonymous message consisting of the agency ciphertext it generated in step~\ref{proto2:agencycipher}; the set of telecom ciphertexts generated in step \ref{proto2:telecomcipher}, and $\de(a)$, the number of telecom ciphertexts being sent. The agencies and all telecoms that could not decrypt $\Enc_{T(a)}(A)$ participate but send no anonymous message.
+\item When the anonymity protocol is complete, the agencies receive all the ciphertexts. They add $\Enc_\mathcal{A}(a)$ to $\mathbf{C}$.
+\item If $\de(a)\geq U$, the agencies discard all telecom ciphertexts received for $a$'s neighbors (i.e., oversight agencies refuse to sign the ciphertexts, and the investigating agency does not send them on to the telecoms).
+\item Otherwise, the agencies choose $(U-1)/\de(a)$ as the remaining budget for each new vertex to explore, subtracting 1 to account for $a$ itself and dividing the remaining budget equally. For each telecom ciphertext received, the agencies add the tuple $(\Enc_{T(b)}(b), T(b), j-1, (U-1)/\de(a))$ to $\mathbf{Q}$.
 \ece
-\item The agencies' final outputs are the lists $\mathbf{C}$ and $\mathbf{H}$.
+\item The agencies' final output is the list $\mathbf{C}$. Each telecom $T$'s final output is $\mathbf{L}_T$.
 \ece
 
-The protocol replaces each query in the protocol of section~\ref{sec:proto1} with broadcast of the telecom ciphertext to all telecoms, and replaces each response with a round of the anonymity protocol. The agencies can in theory dequeue the entire queue in step~\ref{proto2:dequeue}, but they may choose to limit the number of queries made at once for practical purposes.
+The protocol replaces each query in the protocol of section~\ref{sec:proto1} with broadcast of the telecom ciphertext to all telecoms, and replaces each response with a round of the anonymity protocol. This allows the telecom that owns each phone number to respond with appropriate information about the phone number, but shields the telecom's identity from the agencies (and incidentally from other telecoms).
+
+It should be noted that the agencies and telecoms need not handle one ciphertext at a time. In fact, the agencies can in principle dequeue all of $\mathbf{Q}$ in step \ref{proto2:dequeue} and broadcast all pending vertices to the telecoms. In step \ref{proto2:anon}, multiple telecoms can submit multiple messages to a single run of the anonymity protocol, with only those telecoms which were unable to decrypt any vertices submitting no message. The exact number of messages per instance of the anonymity protocol can be tuned for best efficiency.

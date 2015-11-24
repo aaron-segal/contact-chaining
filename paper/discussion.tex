@@ -1,4 +1,5 @@
 \section{Discussion}
+\label{sec:discuss}
 
 \subsection{Correctness of Output}
 
@@ -13,3 +14,10 @@ Both versions of the protocol hide the identities of the chained contacts of $x$
 The protocol of section~\ref{sec:proto1} allows the agencies to learn which telecoms own the ciphertexts in $\mathbf{C}$ and $\mathbf{H}$. They will learn which telecom owns which ciphertext. This may be a security concern, since some telecoms are relatively small or specialized. If the agencies know that such a such a telecom owns an encrypted phone number, this will not allow them to identify the phone number itself, but might convince the agencies to subject that ciphertext to additional scrutiny. This concern is addressed by our revised protocol. Assuming that the anonymity protocol used in section~\ref{sec:proto2} does not allow its participants to learn who sends each message, then the revised protocol does not leak this information.
 
 The telecoms learn two types of information as part of the lawful contact chaining protocol. First, they learn the warrant. Second, they learn which of the phone numbers they serve have been captured (in encrypted form) by the protocol, and when they were captured. The telecoms might possibly be able to infer some extra information about $G$ from observing when vertices they own are queried by the agencies, but they can probably not be able to learn any particular edges of $G$. For example, an agency may serve two phone numbers, $a$ and $b$, and it may infer from timing information that $a$ is queried at distance 1 from $x$, and $b$ is queried at distance 4 from $x$. In that case, the telecom can infer that there exists a path in $G$ of length 3 between $a$ and $b$. This is a very limited form of information. We note that telecoms do not learn which other phones are involved in that path, and that they are already aware of all paths of length 2 or less between phone numbers they serve.
+
+\subsection{Hiding Information From Telecoms}
+\label{sec:oblivious}
+
+In both versions of our protocol, the telecoms learn which of their numbers have been submitted to the agencies. They do not know which phone numbers the agencies will actually investigate after running the privacy-preserving set intersection protocol, but they do know which ones \emph{could} be under investigation. Since many numbers \emph{could} be investigated, this does not compromise the agencies' investigative power.
+
+We may point out nevertheless that a modification of our protocol from \ref{sec:proto1} could allow the agencies to hide from the telecoms which of their clients is being surveilled. The telecoms would need to precompute agency ciphertexts for all of their client numbers, and telecom ciphertexts for all of their clients' contacts. With these precomputed databases, the telecoms could then use oblivious transfer to blindly serve the agencies' requests for information about their clients.
