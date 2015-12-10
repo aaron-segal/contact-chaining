@@ -3,18 +3,16 @@ package cc;
 import java.math.BigInteger;
 
 public class CommutativeElGamal extends ElGamal {
-
-	private static final int MAX_ID = 10000; 
 	
 	private int id;
 
 	/**
 	 * Generates a new CommutativeElGamal object with preset group and generator,
-	 * and randomly generated keys and id.
+	 * and blank generated keys and id.
 	 */
 	public CommutativeElGamal() {
 		super();
-		id = getRNG().nextInt(MAX_ID);
+		id = Integer.MIN_VALUE;
 	}
 
 	/**
@@ -25,7 +23,7 @@ public class CommutativeElGamal extends ElGamal {
 	 */
 	public CommutativeElGamal(BigInteger p, BigInteger g) {
 		super(p, g);
-		id = getRNG().nextInt(MAX_ID);
+		id = Integer.MIN_VALUE;
 	}
 
 	/**
@@ -36,7 +34,7 @@ public class CommutativeElGamal extends ElGamal {
 	 */
 	public CommutativeElGamal(BigInteger p, BigInteger g, BigInteger privateKey) {
 		super(p, g, privateKey);
-		id = getRNG().nextInt(MAX_ID);
+		id = Integer.MIN_VALUE;
 	}
 
 	/**
@@ -47,7 +45,7 @@ public class CommutativeElGamal extends ElGamal {
 	 */
 	public CommutativeElGamal(BigInteger privateKey) {
 		super(privateKey);
-		id = getRNG().nextInt(MAX_ID);
+		id = Integer.MIN_VALUE;
 	}
 
 	/**

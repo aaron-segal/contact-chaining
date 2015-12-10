@@ -19,13 +19,15 @@ import java.util.Random;
  *   "Small" nodes have 3-200 contacts (chosen uniformly).
  *   "Large" nodes have 3-5000 contacts (chosen uniformly).
  * The large type represent businesses.
+ * 
+ * The files are written to filename0, filename1, etc.
  */
 
 public class DataGen {
 	public static double LARGE_CHANCE = 0.01;
 	public static int SMALL_MIN = 3;
 	public static int SMALL_MAX = 200;
-	public static int LARGE_MIN = 3;
+	public static int LARGE_MIN = 5;
 	public static int LARGE_MAX = 5000;
 
 	public static void usage() {
@@ -86,16 +88,28 @@ public class DataGen {
 			graph.get(provider(currId, nTelecoms)).put(currId, userData);
 		}
 
-		// Now store data to file.
-		try {
-			FileOutputStream fos = new FileOutputStream(args[0]);
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			for (HashMap<Integer, HashSet<Integer>> telecom : graph) {
-				oos.writeObject(telecom);
+		// Now store data to file, converting from HashSet<Integer> to int[].
+		for (int i = 0; i < graph.size(); i++) {
+			try {
+				FileOutputStream fos = new FileOutputStream(args[0] + i);
+				ObjectOutputStream oos = new ObjectOutputStream(fos);
+				HashMap<Integer, HashSet<Integer>> telecomData = graph.get(i);
+				HashMap<Integer, int[]> convertedData = new HashMap<Integer, int[]>();
+				for (int userId : telecomData.keySet()) {
+					HashSet<Integer> setData = telecomData.get(userId);
+					int[] arrayData = new int[setData.size()];
+					int j = 0;
+					for (int k : setData) {
+						arrayData[j] = k;
+						j++;
+					}
+					convertedData.put(userId, arrayData);
+				}
+				oos.writeObject(convertedData);
+				oos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			oos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 }
