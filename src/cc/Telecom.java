@@ -153,9 +153,9 @@ public class Telecom {
 	}
 
 	private void sendResponse(TelecomResponse response) throws IOException {
-		byte[] signature = keys.sign(response);
-		outputStream.writeObject(response);
-		outputStream.writeObject(signature);
+		SignedTelecomResponse signedTR = new SignedTelecomResponse(response, id);
+		signedTR.signature = keys.sign(response);
+		outputStream.writeObject(signedTR);
 		outputStream.flush();
 	}
 

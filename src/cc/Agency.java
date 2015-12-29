@@ -2,8 +2,9 @@ package cc;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -36,6 +37,23 @@ public abstract class Agency {
 	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
 	public static final int MAX_TRIES = 10;
 	public static final long SLEEP_BETWEEN_TRIES = 1000;
+	
+	protected ArrayDeque<QueueTCT> investigationQueue;
+	protected ArrayList<BigInteger[]> agencyCiphertexts;
+
+	protected class QueueTCT {
+		// The TelecomCiphertext to search for
+		public TelecomCiphertext data;
+		// The distance out from here we are willing to search
+		public int distance;
+		public QueueTCT() {}
+		public QueueTCT(TelecomCiphertext data, int distance) {
+			this.data = data;
+			this.distance = distance;
+		}
+	}
+
+
 
 
 	protected void usage() {
@@ -94,6 +112,8 @@ public abstract class Agency {
 		}
 		numAgencies = Integer.parseInt(config.getProperty(NUM_AGENCIES, "0"));
 		numTelecoms = Integer.parseInt(config.getProperty(NUM_TELECOMS, "0"));
+		maxDistance = Integer.parseInt(config.getProperty(MAX_DISTANCE, "0"));
+		maxDegree = Integer.parseInt(config.getProperty(MAX_DEGREE, "2147483647"));
 		id = Integer.parseInt(config.getProperty(ID));
 		println("ID = " + id);
 		try {
@@ -106,9 +126,9 @@ public abstract class Agency {
 			e.printStackTrace();
 			return;
 		}
-
 		targetId = Integer.parseInt(config.getProperty(TARGET_ID, "0"));
-
+		investigationQueue = new ArrayDeque<QueueTCT>();
+		agencyCiphertexts = new ArrayList<BigInteger[]>();
 	}
 
 
