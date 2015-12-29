@@ -26,9 +26,9 @@ import java.util.Random;
 public class DataGen {
 	public static double LARGE_CHANCE = 0.01;
 	public static int SMALL_MIN = 3;
-	public static int SMALL_MAX = 200;
+	public static int SMALL_MAX = 20;
 	public static int LARGE_MIN = 5;
-	public static int LARGE_MAX = 5000;
+	public static int LARGE_MAX = 500;
 
 	public static void usage() {
 		System.err.println("Usage: java cc.DataGen filename numTelecoms numUsers");
@@ -87,6 +87,8 @@ public class DataGen {
 			// Add this user's data to the appropriate telecom
 			graph.get(provider(currId, nTelecoms)).put(currId, userData);
 		}
+		
+		System.out.println(nUsers + " users generated");
 
 		// Now store data to file, converting from HashSet<Integer> to int[].
 		for (int i = 0; i < graph.size(); i++) {
@@ -106,6 +108,7 @@ public class DataGen {
 					convertedData.put(userId, arrayData);
 				}
 				oos.writeObject(convertedData);
+				System.out.println("Wrote " + telecomData.size() + " users to " + args[0] + i);
 				oos.close();
 			} catch (IOException e) {
 				e.printStackTrace();
