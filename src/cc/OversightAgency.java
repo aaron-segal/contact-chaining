@@ -6,9 +6,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import cc.Agency.QueueTCT;
-import cc.TelecomResponse.MsgType;
-
 public class OversightAgency extends Agency {
 
 	public static final String LEADER_IP = "LEADERIP";
@@ -92,38 +89,9 @@ public class OversightAgency extends Agency {
 		// Enter main loop. The queue will be empty at first, so this has to be a
 		// do-while loop.
 		do {
-			// Read, verify, and process the response of the previous telecom.
-			SignedTelecomResponse prevTR =
-					(SignedTelecomResponse) leaderIStream.readObject();
-			TelecomResponse telecomResponse = prevTR.telecomResponse;
-			if (!keys.verify(prevTR.telecomId, telecomResponse, prevTR.signature)) {
-				// If we failed to verify the signature, complain bitterly and quit.
-				System.err.println("Failed to verify a signature on a response from "
-						+ prevTR.telecomId);
-				return;
-			}
-			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
-				agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
-				if (distance < 1) {
-					println(telecomResponse.getTelecomCiphertexts().length +
-							" not added to queue; maximum path length reached");
-				} else if (telecomResponse.getTelecomCiphertexts().length > maxDegree &&
-						distance < maxDistance) {
-					// Ignore maximum degree restriction for the original target
-					println(telecomResponse.getTelecomCiphertexts().length +
-							" not added to queue; exceeds maximum degree");
-				} else {
-					for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
-						investigationQueue.addLast(new QueueTCT(tc, distance - 1));
-					}
-					println(telecomResponse.getTelecomCiphertexts().length + 
-							" added to queue");
-				}
-			} else if (telecomResponse.getMsgType() == MsgType.ALREADY_SENT) {
-				println("MsgType: " + telecomResponse.getMsgType());
-			} else {
-				System.err.println("Error: MsgType: " + telecomResponse.getMsgType());
-				return;
+			boolean readOK = readResponseFromLeader(distance);
+			if (!readOK) {
+				return; // error text is processed in readResponseFromLeader.
 			}
 
 			// Look at what the next query to the telecoms should be and give the
@@ -134,9 +102,58 @@ public class OversightAgency extends Agency {
 			leaderOStream.writeObject(keys.sign(queueNext.data));
 			leaderOStream.flush();
 		} while (!investigationQueue.isEmpty());
+
+		// Read final response from leader agency, and send back null to indicate
+		// that we got it.
+		readResponseFromLeader(distance);
+		leaderOStream.writeObject(null);
 	}
 
-	public void close() {
+	/**
+	 * Reads a TelecomResponse from the Leader and processes it.
+	 * @param distance The distance remaining at this point in the search.
+	 * @return True if the response validated OK, false if there was a problem.
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	private boolean readResponseFromLeader(int distance) throws ClassNotFoundException, IOException {
+		// Read, verify, and process the response of the previous telecom.
+		SignedTelecomResponse prevTR =
+				(SignedTelecomResponse) leaderIStream.readObject();
+		TelecomResponse telecomResponse = prevTR.telecomResponse;
+		if (!keys.verify(prevTR.telecomId, telecomResponse, prevTR.signature)) {
+			// If we failed to verify the signature, complain bitterly and quit.
+			System.err.println("Failed to verify a signature on a response from "
+					+ prevTR.telecomId);
+			return false;
+		}
+		if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
+			agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
+			if (distance < 1) {
+				println(telecomResponse.getTelecomCiphertexts().length +
+						" not added to queue; maximum path length reached");
+			} else if (telecomResponse.getTelecomCiphertexts().length > maxDegree &&
+					distance < maxDistance) {
+				// Ignore maximum degree restriction for the original target
+				println(telecomResponse.getTelecomCiphertexts().length +
+						" not added to queue; exceeds maximum degree");
+			} else {
+				for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
+					investigationQueue.addLast(new QueueTCT(tc, distance - 1));
+				}
+				println(telecomResponse.getTelecomCiphertexts().length + 
+						" added to queue");
+			}
+		} else if (telecomResponse.getMsgType() == TelecomResponse.MsgType.ALREADY_SENT) {
+			println("MsgType: " + telecomResponse.getMsgType());
+		} else {
+			System.err.println("Error: MsgType: " + telecomResponse.getMsgType());
+			return false;
+		}
+		return true;
+	}
+
+	public void closeAll() {
 		try {
 			leaderOStream.close();
 			leaderIStream.close();
@@ -151,7 +168,8 @@ public class OversightAgency extends Agency {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			oAgency.close();
+			oAgency.writeOutput();
+			oAgency.closeAll();
 		}
 	}
 }

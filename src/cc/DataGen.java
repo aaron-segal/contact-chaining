@@ -60,7 +60,7 @@ public class DataGen {
 		}
 
 		// For each user, generate a set of contacts and store it.
-		for (int currId = 0; currId < nUsers; currId++) {
+		for (int currId = 1; currId <= nUsers; currId++) {
 			HashSet<Integer> userData = new HashSet<Integer>();
 			// First pick how many contacts it has
 			int degree;
@@ -73,7 +73,7 @@ public class DataGen {
 			// Now fill out its list of contacts. No duplicates, no self-contacts.
 			for (int j = 0; j < degree; j++) {
 				// Do not permit self-contacts
-				int idToAdd = rand.nextInt(nUsers - 1);
+				int idToAdd = 1 + rand.nextInt(nUsers - 1);
 				if (idToAdd >= currId) {
 					idToAdd++;
 				}

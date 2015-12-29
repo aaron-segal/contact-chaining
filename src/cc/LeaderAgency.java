@@ -1,6 +1,5 @@
 package cc;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,8 +8,6 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -159,7 +156,7 @@ public class LeaderAgency extends Agency {
 			// Get signatures from other oversight agencies
 			OversightSearchThread[] searchThreads = new OversightSearchThread[oversight.length];
 			for (int i = 0; i < searchThreads.length; i++) {
-				searchThreads[i] = new OversightSearchThread(oversight[i], prevResponse, nextSignedTC);
+				searchThreads[i] = new OversightSearchThread(oversight[i], prevResponse);
 				searchThreads[i].start();
 			}
 			for (OversightSearchThread ost : searchThreads) {
@@ -215,10 +212,18 @@ public class LeaderAgency extends Agency {
 			}
 		}
 
-		//boolean verifies = keys.verify(initialOwner, response, signature);
-		//println("Verifies: " + verifies);
-
-
+		// Finally, send the very last telecomResponse to our oversight agencies.
+		OversightSearchThread[] searchThreads = new OversightSearchThread[oversight.length];
+		for (int i = 0; i < searchThreads.length; i++) {
+			searchThreads[i] = new OversightSearchThread(oversight[i], prevResponse);
+			searchThreads[i].start();
+		}
+		for (OversightSearchThread ost : searchThreads) {
+			try {
+				ost.join();
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 
 	/**
@@ -265,6 +270,7 @@ public class LeaderAgency extends Agency {
 	public static void main(String[] args) {
 		LeaderAgency leaderAgency = new LeaderAgency(args);
 		leaderAgency.go();
+		leaderAgency.writeOutput();
 		leaderAgency.closeAll();
 	}
 

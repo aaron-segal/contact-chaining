@@ -1,10 +1,8 @@
 package cc;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.net.Socket;
 
 public class TelecomResponder extends Thread {
 

@@ -5,14 +5,12 @@ import java.io.IOException;
 public class OversightSearchThread extends Thread {
 	
 	private OversightSocket oSocket;
-	private SignedTelecomCiphertext nextTC;
 	private SignedTelecomResponse prevTR;
 	private byte[] signature = null;
 	
 	public OversightSearchThread(OversightSocket oSocket,
-			SignedTelecomResponse prevTR, SignedTelecomCiphertext nextTC) {
+			SignedTelecomResponse prevTR) {
 		this.oSocket = oSocket;
-		this.nextTC = nextTC;
 		this.prevTR = prevTR;
 	}
 	

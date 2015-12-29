@@ -1,21 +1,15 @@
 package cc;
 
-import java.security.Signature;
-import java.security.SignatureException;
 import java.util.*;
 import java.io.*; 
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import cc.TelecomResponse.MsgType;
-
 public class Telecom {
 
 	//if the -q flag is passed, nothing will be output except at the very end
 	public static boolean quiet = false;
-	//if the -s flag is passed, no timings or statistics will be saved
-	private boolean suppress_timing = false; 
 
 	protected int port;
 	protected int numAgencies, numTelecoms, id;
@@ -37,7 +31,7 @@ public class Telecom {
 	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
 
 	private static void usage() {
-		System.err.println("Usage: java cc.Telecom config_file [-c config_file] [-i input_data_file] [-k private_key_file] [-q] [-s]");
+		System.err.println("Usage: java cc.Telecom config_file [-c config_file] [-i input_data_file] [-k private_key_file] [-q]");
 	}
 
 	public Telecom(String[] args) {
@@ -91,8 +85,6 @@ public class Telecom {
 				}
 			} else if (args[i].equals("-q")) {
 				quiet = true;
-			} else if (args[i].equals("-s")) {
-				suppress_timing = true;
 			} else {
 				usage();
 				return;
@@ -131,27 +123,6 @@ public class Telecom {
 		}
 	}
 
-	public void test() {
-		int small = 0, large = 0;
-		for (int i = 0; i < 10000; i += 2) {
-			System.out.print(i + " : ");
-			TelecomResponse response = data.queryResponse(i, keys);
-			if (response.getMsgType() == MsgType.DATA) {
-				int numNeighbors = response.getTelecomCiphertexts().length;
-				if (numNeighbors < 201) {
-					small++;
-				} else {
-					large++;
-				}
-				System.out.println(numNeighbors);
-			} else {
-				System.out.println(response.getMsgType());
-			}
-		}
-		System.out.println("large pct: " + large + " out of " + (large + small));
-
-	}
-
 	private void sendResponse(TelecomResponse response) throws IOException {
 		SignedTelecomResponse signedTR = new SignedTelecomResponse(response, id);
 		signedTR.signature = keys.sign(response);
@@ -167,6 +138,7 @@ public class Telecom {
 		while (true) {
 			try {
 				agencySocket = listenSocket.accept();
+				println("Got a connection from agency at " + agencySocket.getInetAddress().toString());
 				outputStream = new ObjectOutputStream(agencySocket.getOutputStream());
 				inputStream = new ObjectInputStream(agencySocket.getInputStream());
 				data.resetSent();

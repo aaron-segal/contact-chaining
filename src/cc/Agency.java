@@ -1,10 +1,16 @@
 package cc;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -35,9 +41,10 @@ public abstract class Agency {
 	public static final String MAX_DEGREE = "MAXDEGREE";
 	public static final String TARGET_ID = "TARGET";
 	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
+	public static final String OUTPUT_PATH = "OUTPUTPATH";
 	public static final int MAX_TRIES = 10;
 	public static final long SLEEP_BETWEEN_TRIES = 1000;
-	
+
 	protected ArrayDeque<QueueTCT> investigationQueue;
 	protected ArrayList<BigInteger[]> agencyCiphertexts;
 
@@ -57,7 +64,7 @@ public abstract class Agency {
 
 
 	protected void usage() {
-		System.err.println("Usage: java cc.Agency config_file_ [-c config_file] [-k private_key_file] [-q] [-s]");
+		System.err.println("Usage: java cc.Agency config_file_ [-c config_file] [-k private_key_file] [-o output_path] [-q] [-s]");
 	}
 
 	public Agency(String[] args) {
@@ -101,6 +108,14 @@ public abstract class Agency {
 					config.setProperty(PRIVATE_KEY, args[i+1]);
 					i++;
 				}
+			} else if (args[i].equals("-o")) {
+				if (args.length == i+1) {
+					usage();
+					return;
+				} else {
+					config.setProperty(OUTPUT_PATH, args[i+1]);
+					i++;
+				}
 			} else if (args[i].equals("-q")) {
 				quiet = true;
 			} else if (args[i].equals("-s")) {
@@ -115,6 +130,28 @@ public abstract class Agency {
 		maxDistance = Integer.parseInt(config.getProperty(MAX_DISTANCE, "0"));
 		maxDegree = Integer.parseInt(config.getProperty(MAX_DEGREE, "2147483647"));
 		id = Integer.parseInt(config.getProperty(ID));
+		if (!config.getProperty(OUTPUT_PATH, "").isEmpty()) {
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, h:mm a z"); 
+			try {
+				File file = new File(config.getProperty(OUTPUT_PATH));
+				file.createNewFile();
+				FileWriter fw = new FileWriter(file);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write("# Data obtained by contact chaining search");
+				bw.newLine();
+				bw.write("# Timestamp:   " + sdf.format(new Date()));
+				bw.newLine();
+				bw.write("# Target:      " + targetId);
+				bw.newLine();
+				bw.write("# Path length: " + maxDistance);
+				bw.newLine();
+				bw.flush();
+				bw.close();
+			} catch (IOException e) {
+				System.err.println("Couldn't open file " + config.getProperty(OUTPUT_PATH) + " for writing.");
+				e.printStackTrace();
+			}
+		}
 		println("ID = " + id);
 		try {
 			keys = new Keys(config.getProperty(PRIVATE_KEY),
@@ -162,6 +199,39 @@ public abstract class Agency {
 	 */
 	public int getTargetId() {
 		return targetId;
+	}
+
+
+	/**
+	 * Saves the output agency ciphertexts to a file if a filename is specified,
+	 * or else just prints the number of agency ciphertexts that would have been
+	 * saved to file.
+	 * This prints something even if quiet mode is turned on. 
+	 */
+	public void writeOutput() {
+		println("Search complete.");
+		// This second line prints even if quiet mode is on. This is deliberate.
+		System.out.println(agencyCiphertexts.size() + " users found.");
+		if (config.getProperty(OUTPUT_PATH, "").isEmpty()) {
+			return;
+		}
+		try {
+			File file = new File(config.getProperty(OUTPUT_PATH));
+			FileWriter fw = new FileWriter(file, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			for (BigInteger[] aCiphertext : agencyCiphertexts) {
+				bw.write("%" + Arrays.toString(aCiphertext));
+				bw.newLine();
+			}
+			bw.flush();
+			bw.close();
+			println("Wrote agency ciphertexts to " + config.getProperty(OUTPUT_PATH));
+		} catch (IOException e) {
+			System.err.println("Couldn't write to file " + config.getProperty(OUTPUT_PATH) + " for writing.");
+			e.printStackTrace();
+		}
+
+
 	}
 
 }

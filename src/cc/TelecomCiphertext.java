@@ -2,7 +2,6 @@ package cc;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.HashMap;
 
 
 /**

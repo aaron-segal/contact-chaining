@@ -2,7 +2,6 @@ package cc;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.HashMap;
 
 /**
  * This class contains all the data that the telecoms include when replying to
