@@ -5,22 +5,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class OversightSocket {
+public class TelecomSocket {
 
 	public Socket socket;
-	public int agencyId;
 	public ObjectInputStream inputStream;
 	public ObjectOutputStream outputStream;
-	public LeaderAgency lAgency;
 	public boolean open = false;
 
-	public OversightSocket(Socket socket, LeaderAgency lAgency) throws IOException {
+	public TelecomSocket(Socket socket) throws IOException {
 		this.socket = socket;
-		this.lAgency = lAgency;
 		inputStream = new ObjectInputStream(socket.getInputStream());
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
-		OversightSyncThread ost = new OversightSyncThread(this);
-		ost.start();
+		open = true;
 	}
 
 	public void close() {

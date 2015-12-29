@@ -2,6 +2,7 @@ package cc;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 /**
  * This class contains all the data that the telecoms include when replying to
@@ -14,7 +15,7 @@ public class TelecomResponse implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum MsgType {
-		DATA, NOT_FOUND, ALREADY_SENT
+		ERROR, DATA, NOT_FOUND, ALREADY_SENT, INVALID_SIGNATURE
 	}
 	
 	private MsgType msgType;
@@ -74,6 +75,8 @@ public class TelecomResponse implements Serializable {
 	public void setMsgType(MsgType msgType) {
 		this.msgType = msgType;
 	}
+	
+
 	
 	
 }

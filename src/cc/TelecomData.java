@@ -20,9 +20,11 @@ public class TelecomData {
 	private HashMap<Integer, int[]> contacts;
 	// Records whether we sent the agencies information about each user.
 	private HashSet<Integer> alreadySent;
+	// The number of telecoms there are
+	private int numTelecoms;
 
 	@SuppressWarnings("unchecked")
-	public TelecomData(String filename) {
+	public TelecomData(String filename, int numTelecoms) {
 		try {
 			FileInputStream fis = new FileInputStream(filename);
 			ObjectInputStream ois = new ObjectInputStream(fis);
@@ -34,11 +36,13 @@ public class TelecomData {
 			e.printStackTrace();
 		}
 		alreadySent = new HashSet<Integer>();
+		this.numTelecoms = numTelecoms;
 	}
 
-	public TelecomData(HashMap<Integer, int[]> contacts) {
+	public TelecomData(HashMap<Integer, int[]> contacts, int numTelecoms) {
 		this.contacts = contacts;
 		alreadySent = new HashSet<Integer>();
+		this.numTelecoms = numTelecoms;
 	}
 
 	/**
@@ -48,7 +52,7 @@ public class TelecomData {
 		alreadySent = new HashSet<Integer>();
 	}
 
-	public TelecomResponse queryResponse(int userId, int numTelecoms, Keys keys) {
+	public TelecomResponse queryResponse(int userId, Keys keys) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
 			return new TelecomResponse(MsgType.NOT_FOUND);

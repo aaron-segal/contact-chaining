@@ -16,7 +16,7 @@ public class KeyGen {
 	public static String GENERATOR = "GENERATOR";
 	
 	public static void usage() {
-		System.out.println("Usage: KeyGen outfile [-i id] [-p prime -g generator]");
+		System.out.println("Usage: cc.KeyGen outfile [-i id] [-p prime -g generator]");
 		System.out.println(ElGamal.prime1024);
 	}
 	
