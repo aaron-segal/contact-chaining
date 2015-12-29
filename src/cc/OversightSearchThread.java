@@ -23,13 +23,11 @@ public class OversightSearchThread extends Thread {
 		}
 		try {
 			// Send the oversight agency the response we got from the previous
-			// telecom so they can stay in sync with us, as well as the ciphertext
-			// we propose to send next.
+			// telecom so they can stay in sync with us.
 			oSocket.outputStream.writeObject(prevTR);
-			oSocket.outputStream.writeObject(nextTC);
 			oSocket.outputStream.flush();
-			// If the oversight agency is in sync with us, they will agree to sign
-			// our next ciphertext.
+			// If the oversight agency is in sync with us, they will know what our
+			// next ciphertext is, and sign it.
 			signature = (byte[]) oSocket.inputStream.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -126,21 +126,11 @@ public class OversightAgency extends Agency {
 				return;
 			}
 
-			// Look at what the next query to the telecoms should be, make sure the
-			// leader is actually making that query, and then give the leader a signature
-			// on that telecom ciphertext.
+			// Look at what the next query to the telecoms should be and give the
+			// leader a signature on that telecom ciphertext.
 			QueueTCT queueNext = investigationQueue.pop();
 			println("Remaining in queue: " + investigationQueue.size());
 			distance = queueNext.distance;
-			SignedTelecomCiphertext nextTC =
-					(SignedTelecomCiphertext) leaderIStream.readObject();
-			if (!nextTC.telecomCiphertext.equals(queueNext.data)) {
-				// If the ciphertext the agency wants to send doesn't match the next
-				// one in our queue, complain bitterly and quit.
-				System.err.println("Proposed telecom ciphertext doesn't match the"
-						+ "next ciphertext in our queue.");
-				return;
-			}
 			leaderOStream.writeObject(keys.sign(queueNext.data));
 			leaderOStream.flush();
 		} while (!investigationQueue.isEmpty());

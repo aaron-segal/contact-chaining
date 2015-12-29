@@ -19,7 +19,7 @@ public class Telecom {
 
 	protected int port;
 	protected int numAgencies, numTelecoms, id;
-	protected TelecomData myData;
+	protected TelecomData data;
 	protected Keys keys;
 	protected ServerSocket listenSocket = null;
 
@@ -114,7 +114,7 @@ public class Telecom {
 			return;
 		}
 
-		myData = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms);
+		data = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms);
 
 		try {
 			listenSocket = new ServerSocket(port);
@@ -135,7 +135,7 @@ public class Telecom {
 		int small = 0, large = 0;
 		for (int i = 0; i < 10000; i += 2) {
 			System.out.print(i + " : ");
-			TelecomResponse response = myData.queryResponse(i, keys);
+			TelecomResponse response = data.queryResponse(i, keys);
 			if (response.getMsgType() == MsgType.DATA) {
 				int numNeighbors = response.getTelecomCiphertexts().length;
 				if (numNeighbors < 201) {
@@ -169,6 +169,7 @@ public class Telecom {
 				agencySocket = listenSocket.accept();
 				outputStream = new ObjectOutputStream(agencySocket.getOutputStream());
 				inputStream = new ObjectInputStream(agencySocket.getInputStream());
+				data.resetSent();
 				// This while loop makes sure that we continuously respond to
 				// queries over our open connection.
 				while (true) {
@@ -185,7 +186,7 @@ public class Telecom {
 					}
 					BigInteger queryId = keys.getPrivateKey().
 							decrypt(signedTC.telecomCiphertext.getEncryptedId());
-					TelecomResponse response = myData.queryResponse(queryId.intValue(), keys);
+					TelecomResponse response = data.queryResponse(queryId.intValue(), keys);
 					sendResponse(response);
 				}
 			} catch (IOException e) {
