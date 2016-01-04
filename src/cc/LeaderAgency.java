@@ -117,6 +117,7 @@ public class LeaderAgency extends Agency {
 		try {
 			ObjectOutputStream oos = telecoms.get(initialOwner).outputStream;
 			ObjectInputStream ois = telecoms.get(initialOwner).inputStream;
+			nextSignedTC.distance = maxDistance;
 			oos.writeObject(nextSignedTC);
 			oos.flush();
 			prevResponse = (SignedTelecomResponse) ois.readObject();
@@ -177,15 +178,18 @@ public class LeaderAgency extends Agency {
 			try {
 				ObjectOutputStream oos = telecoms.get(nextOwner).outputStream;
 				ObjectInputStream ois = telecoms.get(nextOwner).inputStream;
+				nextSignedTC.distance = queueNext.distance;
 				oos.writeObject(nextSignedTC);
 				oos.flush();
 				prevResponse = (SignedTelecomResponse) ois.readObject();
 				TelecomResponse telecomResponse = prevResponse.telecomResponse;
 				if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
 					agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
-					if (queueNext.distance < 1) {
+					if (queueNext.distance < 1 && telecomResponse.getTelecomCiphertexts().length > 0) {
 						println(telecomResponse.getTelecomCiphertexts().length +
 								" not added to queue; maximum path length reached");
+					} else if (queueNext.distance < 1) {
+						println("No new ciphertexts added to queue; maximum path length reached");
 					} else if (telecomResponse.getTelecomCiphertexts().length > maxDegree){
 						println(telecomResponse.getTelecomCiphertexts().length +
 								" not added to queue; exceeds maximum degree");

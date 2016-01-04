@@ -52,7 +52,7 @@ public class TelecomData {
 		alreadySent = new HashSet<Integer>();
 	}
 
-	public TelecomResponse queryResponse(int userId, Keys keys) {
+	public TelecomResponse queryResponse(int userId, Keys keys, int distance) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
 			return new TelecomResponse(MsgType.NOT_FOUND);
@@ -69,18 +69,20 @@ public class TelecomData {
 					keys.getPublicKey(agencyId), agencyCiphertext);
 		}
 
-		// Compute set of neighbors
+		// Compute set of neighbors unless distance == 0
 		int[] neighbors = contacts.get(userId);
 		TelecomCiphertext[] encryptedNeighbors = new TelecomCiphertext[neighbors.length];
-		ElGamal encrypter = new ElGamal();
-		for (int i = 0; i < neighbors.length; i++) {
-			int owner = DataGen.provider(neighbors[i], numTelecoms);
-			encryptedNeighbors[i] = new TelecomCiphertext();
-			encryptedNeighbors[i].setOwner(owner);
-			encryptedNeighbors[i].setEncryptedId(encrypter.encrypt(
-					keys.getPublicKey(owner),BigInteger.valueOf(neighbors[i])));
+		if (distance > 0) {
+			ElGamal encrypter = new ElGamal();
+			for (int i = 0; i < neighbors.length; i++) {
+				int owner = DataGen.provider(neighbors[i], numTelecoms);
+				encryptedNeighbors[i] = new TelecomCiphertext();
+				encryptedNeighbors[i].setOwner(owner);
+				encryptedNeighbors[i].setEncryptedId(encrypter.encrypt(
+						keys.getPublicKey(owner),BigInteger.valueOf(neighbors[i])));
+			}
 		}
-
+		
 		// Mark that we have sent this userId.
 		alreadySent.add(userId);
 		return new TelecomResponse(agencyCiphertext, encryptedNeighbors);

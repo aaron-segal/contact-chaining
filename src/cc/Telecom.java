@@ -158,7 +158,7 @@ public class Telecom {
 					}
 					BigInteger queryId = keys.getPrivateKey().
 							decrypt(signedTC.telecomCiphertext.getEncryptedId());
-					TelecomResponse response = data.queryResponse(queryId.intValue(), keys);
+					TelecomResponse response = data.queryResponse(queryId.intValue(), keys, signedTC.distance);
 					sendResponse(response);
 				}
 			} catch (IOException e) {

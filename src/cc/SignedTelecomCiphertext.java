@@ -8,6 +8,7 @@ public class SignedTelecomCiphertext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public TelecomCiphertext telecomCiphertext;
 	public HashMap<Integer, byte[]> signatures;
+	public int distance; // If distance == 0, do not send back a set of neighbors.
 	
 	public SignedTelecomCiphertext() {
 		signatures = new HashMap<Integer, byte[]>();
