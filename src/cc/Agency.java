@@ -24,13 +24,16 @@ public abstract class Agency {
 	//if the -q flag is passed, nothing will be output except at the very end
 	public static boolean quiet = false;
 	//if the -s flag is passed, no timings or statistics will be saved
-	protected boolean suppress_timing = false; 
+	protected boolean suppressTiming = false; 
 
 	protected int numAgencies, numTelecoms;
 	protected int id;
 	protected Keys keys;
 	protected int targetId, maxDistance, maxDegree;
 	protected Properties config;
+
+	private long startSetupTime, startProtoTime, finishTime;
+	private Date timeStamp; // The date and time when the protocol began
 
 	public static final String ID = "ID";
 	public static final String PRIVATE_KEY = "PRIVATEKEY";
@@ -42,6 +45,7 @@ public abstract class Agency {
 	public static final String TARGET_ID = "TARGET";
 	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
 	public static final String OUTPUT_PATH = "OUTPUTPATH";
+	public static final String TIMING_RECORD_PATH = "TIMINGPATH";
 	public static final int MAX_TRIES = 10;
 	public static final long SLEEP_BETWEEN_TRIES = 1000;
 
@@ -68,7 +72,7 @@ public abstract class Agency {
 	}
 
 	public Agency(String[] args) {
-
+		startSetupTime = System.currentTimeMillis();
 		if (args.length < 1) {
 			usage();
 			System.exit(1);
@@ -119,7 +123,7 @@ public abstract class Agency {
 			} else if (args[i].equals("-q")) {
 				quiet = true;
 			} else if (args[i].equals("-s")) {
-				suppress_timing = true;
+				suppressTiming = true;
 			} else {
 				usage();
 				return;
@@ -130,8 +134,9 @@ public abstract class Agency {
 		maxDistance = Integer.parseInt(config.getProperty(MAX_DISTANCE, "0"));
 		maxDegree = Integer.parseInt(config.getProperty(MAX_DEGREE, "2147483647"));
 		id = Integer.parseInt(config.getProperty(ID));
+		timeStamp = new Date();
 		if (!config.getProperty(OUTPUT_PATH, "").isEmpty()) {
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, h:mm a z"); 
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy, h:mm a z");
 			try {
 				File file = new File(config.getProperty(OUTPUT_PATH));
 				file.createNewFile();
@@ -139,7 +144,7 @@ public abstract class Agency {
 				BufferedWriter bw = new BufferedWriter(fw);
 				bw.write("# Data obtained by contact chaining search");
 				bw.newLine();
-				bw.write("# Timestamp:   " + sdf.format(new Date()));
+				bw.write("# Timestamp:   " + sdf.format(timeStamp));
 				bw.newLine();
 				bw.write("# Target:      " + targetId);
 				bw.newLine();
@@ -168,6 +173,13 @@ public abstract class Agency {
 		agencyCiphertexts = new ArrayList<BigInteger[]>();
 	}
 
+	/**
+	 * This method should be overridden by Agency's subclasses, which must call
+	 * super.contactChaining() at the beginning of this method.
+	 */
+	public void contactChaining() {
+		startProtoTime = System.currentTimeMillis();
+	}
 
 	/**
 	 * Operating on the assumption that agencies have ids -1 through -numAgencies,
@@ -183,8 +195,51 @@ public abstract class Agency {
 		return agencyIds;
 	}
 
+	/**
+	 * Marks the end of the protocol. Prints runtime (if quiet mode is off) and
+	 * writes timings to log file if suppress_timing is off and a log file is
+	 * specified.
+	 */
+	protected void reportTiming() {
+		finishTime = System.currentTimeMillis();
+		println("Setup time (ms)      : " + (startProtoTime - startSetupTime));
+		println("Protocol runtime (ms): " + (finishTime - startProtoTime));
+		println("Total runtime (ms)   : " + (finishTime - startSetupTime));
+
+		/* 
+		 * If a log file has been specified, save timing info to it.
+		 * The top line of the log file should be:
+		 * Timestamp,Agencies,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),
+		 */
+		if (suppressTiming || config.getProperty(TIMING_RECORD_PATH, "").isEmpty()) {
+			return;
+		}
+		//Format must not have commas in it if the log is csv format.
+		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm:ss a"); 
+		try {
+			File file = new File(config.getProperty(TIMING_RECORD_PATH));
+			file.createNewFile();
+			FileWriter fw = new FileWriter(file, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(sdf.format(timeStamp) + ",");
+			bw.write(numAgencies + ",");
+			bw.write(agencyCiphertexts.size() + ",");
+			bw.write(maxDistance + ",");
+			bw.write(maxDegree + ",");
+			bw.write((startProtoTime - startSetupTime) + ",");
+			bw.write((finishTime - startProtoTime) + ",");
+			bw.write((finishTime - startSetupTime) + ",");
+			bw.newLine();
+			bw.flush();
+			bw.close();
+		} catch (IOException e) {
+			System.err.println("Couldn't open file " + config.getProperty(OUTPUT_PATH) + " for writing.");
+			e.printStackTrace();
+		}
+	}
+
 	/** 
-	 * Prints a string to stdout if we are not in quiet mode.
+	 * Prints a string to standard output, but only if we are not in quiet mode.
 	 * @param s The string to print.
 	 */
 	protected void println(String s) {
@@ -227,7 +282,7 @@ public abstract class Agency {
 			bw.close();
 			println("Wrote agency ciphertexts to " + config.getProperty(OUTPUT_PATH));
 		} catch (IOException e) {
-			System.err.println("Couldn't write to file " + config.getProperty(OUTPUT_PATH) + " for writing.");
+			System.err.println("Couldn't write to file " + config.getProperty(OUTPUT_PATH) + "!");
 			e.printStackTrace();
 		}
 

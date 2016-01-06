@@ -68,7 +68,8 @@ public class LeaderAgency extends Agency {
 		return connected;
 	}
 
-	public void go() {
+	public void contactChaining() {
+		super.contactChaining();
 		int connected = waitForConnections();
 		if (connected < numAgencies - 1) {
 			System.err.println("Only got " + connected + " agencies connected.");
@@ -273,8 +274,9 @@ public class LeaderAgency extends Agency {
 
 	public static void main(String[] args) {
 		LeaderAgency leaderAgency = new LeaderAgency(args);
-		leaderAgency.go();
+		leaderAgency.contactChaining();
 		leaderAgency.writeOutput();
+		leaderAgency.reportTiming();
 		leaderAgency.closeAll();
 	}
 

@@ -55,32 +55,45 @@ public class OversightAgency extends Agency {
 		}
 	}
 
-	public void go() throws Exception {
-		leaderOStream.writeInt(id);
-		leaderOStream.flush();
-		int leaderTarget = leaderIStream.readInt();
-		if (leaderTarget != targetId) {
-			println("Failure: Investigating agency gave target " + leaderTarget +
-					" but out target is " + targetId + ".");
-		} else {
-			println("Connected, targeting id " + targetId);
+	public void contactChaining() {
+		super.contactChaining();
+		try {
+			leaderOStream.writeInt(id);
+			leaderOStream.flush();
+			int leaderTarget = leaderIStream.readInt();
+			if (leaderTarget != targetId) {
+				println("Failure: Investigating agency gave target " + leaderTarget +
+						" but out target is " + targetId + ".");
+			} else {
+				println("Connected, targeting id " + targetId);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
 		}
 
-		//Test: Verify signature and sign
+		// Make sure everything is working right by reading and checking the
+		// leader's signature.
+		try {
 		SignedTelecomCiphertext signedTC =
 				(SignedTelecomCiphertext) leaderIStream.readObject();
 		//There should be only one signature so far, with the leader's id
-		int leaderId = 0;
-		for (int n : signedTC.signatures.keySet()) {
-			leaderId = n;
-		}
+		int leaderId = signedTC.signatures.keySet().iterator().next();
 		if (!keys.verify(leaderId, signedTC)) {
 			println("Failure: Investigating agency's signature (ID " + leaderId + ") does not verify!");
 			return;
 		}
 		println("Success, signature verified");
+
 		leaderOStream.writeObject(keys.sign(signedTC.telecomCiphertext));
 		leaderOStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
 
 		// Before entering the loop, store the fact that we were looking at the
 		// primary target.
@@ -88,6 +101,7 @@ public class OversightAgency extends Agency {
 
 		// Enter main loop. The queue will be empty at first, so this has to be a
 		// do-while loop.
+		try {
 		do {
 			boolean readOK = readResponseFromLeader(distance);
 			if (!readOK) {
@@ -107,6 +121,13 @@ public class OversightAgency extends Agency {
 		// that we got it.
 		readResponseFromLeader(distance);
 		leaderOStream.writeObject(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	/**
@@ -163,13 +184,9 @@ public class OversightAgency extends Agency {
 
 	public static void main(String[] args) {
 		OversightAgency oAgency = new OversightAgency(args);
-		try {
-			oAgency.go();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			oAgency.writeOutput();
-			oAgency.closeAll();
-		}
+		oAgency.contactChaining();
+		oAgency.writeOutput();
+		oAgency.reportTiming();
+		oAgency.closeAll();
 	}
 }
