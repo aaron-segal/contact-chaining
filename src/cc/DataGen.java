@@ -10,7 +10,8 @@ import java.util.Random;
 
 
 /**
- * We are going to use 0-indexed integer ids for users and for telecoms.
+ * We are going to use 1-indexed integer ids for users and 0-indexed integer ids
+ * for telecoms.
  * If nTelcoms is the number of telecoms, then the user with id X
  *   belongs to telecom (X % nTelcoms).
  * We are assuming that each user/node has a totally random set of contacts.
