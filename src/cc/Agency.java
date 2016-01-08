@@ -68,7 +68,7 @@ public abstract class Agency {
 
 
 	protected void usage() {
-		System.err.println("Usage: java cc.Agency config_file_ [-c config_file] [-k private_key_file] [-o output_path] [-q] [-s]");
+		System.err.println("Usage: java cc.Agency config_file [-c config_file] [-d max_degree] [-l max_length] [-k private_key_file] [-o output_path] [-q] [-s]");
 	}
 
 	public Agency(String[] args) {
@@ -102,6 +102,22 @@ public abstract class Agency {
 						System.err.println("Could not load config file " + args[i+1]);
 						System.exit(1);
 					}
+					i++;
+				}
+			} else if (args[i].equals("-d")) {
+				if (args.length == i+1) {
+					usage();
+					return;
+				} else {
+					config.setProperty(MAX_DEGREE, args[i+1]);
+					i++;
+				}
+			} else if (args[i].equals("-l")) {
+				if (args.length == i+1) {
+					usage();
+					return;
+				} else {
+					config.setProperty(MAX_DISTANCE, args[i+1]);
 					i++;
 				}
 			} else if (args[i].equals("-k")) {

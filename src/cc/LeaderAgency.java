@@ -26,7 +26,7 @@ public class LeaderAgency extends Agency {
 
 	@Override
 	protected void usage() {
-		System.err.println("Usage: java cc.LeaderAgency config_file_ [-c config_file] [-k private_key_file] [-q] [-s]");
+		System.err.println("Usage: java cc.LeaderAgency config_file [-c config_file] [-d max_degree] [-l max_length] [-k private_key_file] [-q] [-s]");
 	}
 
 	public LeaderAgency(String[] args) {
@@ -119,6 +119,7 @@ public class LeaderAgency extends Agency {
 			ObjectOutputStream oos = telecoms.get(initialOwner).outputStream;
 			ObjectInputStream ois = telecoms.get(initialOwner).inputStream;
 			nextSignedTC.distance = maxDistance;
+			nextSignedTC.maxDegree = maxDegree;
 			oos.writeObject(nextSignedTC);
 			oos.flush();
 			prevResponse = (SignedTelecomResponse) ois.readObject();
@@ -175,6 +176,7 @@ public class LeaderAgency extends Agency {
 			println("Sending signed request to telecom " + nextOwner + "...");
 			if (!telecoms.containsKey(nextOwner)) {
 				connectTelecom(nextOwner);
+				nextSignedTC.maxDegree = maxDegree;
 			}
 			try {
 				ObjectOutputStream oos = telecoms.get(nextOwner).outputStream;

@@ -156,6 +156,10 @@ public class Telecom {
 						sendResponse(new TelecomResponse(TelecomResponse.MsgType.INVALID_SIGNATURE));
 						return;
 					}
+					// Update maxDegree if we don't already know it
+					if (data.getMaxDegree() == Integer.MAX_VALUE && signedTC.maxDegree > 0) {
+						data.setMaxDegree(signedTC.maxDegree);
+					}
 					BigInteger queryId = keys.getPrivateKey().
 							decrypt(signedTC.telecomCiphertext.getEncryptedId());
 					TelecomResponse response = data.queryResponse(queryId.intValue(), keys, signedTC.distance);

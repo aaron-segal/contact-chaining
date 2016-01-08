@@ -22,6 +22,8 @@ public class TelecomData {
 	private HashSet<Integer> alreadySent;
 	// The number of telecoms there are
 	private int numTelecoms;
+	// The maximum degree of users the agencies are interested in
+	private int maxDegree;
 
 	@SuppressWarnings("unchecked")
 	public TelecomData(String filename, int numTelecoms) {
@@ -37,6 +39,7 @@ public class TelecomData {
 		}
 		alreadySent = new HashSet<Integer>();
 		this.numTelecoms = numTelecoms;
+		this.maxDegree = Integer.MAX_VALUE;
 	}
 
 	public TelecomData(HashMap<Integer, int[]> contacts, int numTelecoms) {
@@ -47,11 +50,13 @@ public class TelecomData {
 
 	/**
 	 * Forgets which IDs were already sent, allowing them to be sent again.
+	 * Also resets maxDegree.
 	 */
 	public void resetSent() {
 		alreadySent = new HashSet<Integer>();
+		this.maxDegree = Integer.MAX_VALUE;
 	}
-
+	
 	public TelecomResponse queryResponse(int userId, Keys keys, int distance) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
@@ -72,7 +77,7 @@ public class TelecomData {
 		// Compute set of neighbors unless distance == 0
 		int[] neighbors = contacts.get(userId);
 		TelecomCiphertext[] encryptedNeighbors = new TelecomCiphertext[neighbors.length];
-		if (distance > 0) {
+		if (distance > 0 && neighbors.length <= maxDegree) {
 			ElGamal encrypter = new ElGamal();
 			for (int i = 0; i < neighbors.length; i++) {
 				int owner = DataGen.provider(neighbors[i], numTelecoms);
@@ -86,5 +91,19 @@ public class TelecomData {
 		// Mark that we have sent this userId.
 		alreadySent.add(userId);
 		return new TelecomResponse(agencyCiphertext, encryptedNeighbors);
+	}
+
+	/**
+	 * @return the maxDegree
+	 */
+	public int getMaxDegree() {
+		return maxDegree;
+	}
+
+	/**
+	 * @param maxDegree the maxDegree to set
+	 */
+	public void setMaxDegree(int maxDegree) {
+		this.maxDegree = maxDegree;
 	}
 }

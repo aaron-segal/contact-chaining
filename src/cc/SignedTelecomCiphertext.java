@@ -9,6 +9,7 @@ public class SignedTelecomCiphertext implements Serializable {
 	public TelecomCiphertext telecomCiphertext;
 	public HashMap<Integer, byte[]> signatures;
 	public int distance; // If distance == 0, do not send back a set of neighbors.
+	public int maxDegree = 0; // The maximum degree of users that agencies care about. Ignored if 0.
 	
 	public SignedTelecomCiphertext() {
 		signatures = new HashMap<Integer, byte[]>();

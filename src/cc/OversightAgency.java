@@ -17,7 +17,7 @@ public class OversightAgency extends Agency {
 
 	@Override
 	protected void usage() {
-		System.err.println("Usage: java cc.OversightAgency config_file_ [-c config_file] [-k private_key_file] [-q] [-s]");
+		System.err.println("Usage: java cc.OversightAgency config_file [-c config_file] [-d max_degree] [-l max_length] [-k private_key_file] [-q] [-s]");
 	}
 
 	public OversightAgency(String[] args) {
