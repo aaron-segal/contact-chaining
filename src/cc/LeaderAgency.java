@@ -119,7 +119,6 @@ public class LeaderAgency extends Agency {
 			ObjectOutputStream oos = telecoms.get(initialOwner).outputStream;
 			ObjectInputStream ois = telecoms.get(initialOwner).inputStream;
 			nextSignedTC.distance = maxDistance;
-			nextSignedTC.maxDegree = maxDegree;
 			oos.writeObject(nextSignedTC);
 			oos.flush();
 			prevResponse = (SignedTelecomResponse) ois.readObject();
@@ -146,6 +145,10 @@ public class LeaderAgency extends Agency {
 			e.printStackTrace();
 			return;
 		}
+		
+		// Remember that we still need to tell the first telecom about maxDegree.
+		// It is already in the list of known telecoms so we won't do this otherwise.
+		boolean needToInformInitialOwner = true;
 
 		// We have the first responses we need to start investigating the graph.
 		// We are ready to enter the main loop proper
@@ -177,6 +180,9 @@ public class LeaderAgency extends Agency {
 			if (!telecoms.containsKey(nextOwner)) {
 				connectTelecom(nextOwner);
 				nextSignedTC.maxDegree = maxDegree;
+			} else if (needToInformInitialOwner && nextOwner == initialOwner) {
+				nextSignedTC.maxDegree = maxDegree;
+				needToInformInitialOwner = false;
 			}
 			try {
 				ObjectOutputStream oos = telecoms.get(nextOwner).outputStream;
