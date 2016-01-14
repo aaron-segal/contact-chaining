@@ -173,7 +173,7 @@ public class Telecom {
 			}
 		}
 	}
-	
+
 	public void close() {
 		try {
 			outputStream.close();

@@ -76,18 +76,18 @@ public class OversightAgency extends Agency {
 		// Make sure everything is working right by reading and checking the
 		// leader's signature.
 		try {
-		SignedTelecomCiphertext signedTC =
-				(SignedTelecomCiphertext) leaderIStream.readObject();
-		//There should be only one signature so far, with the leader's id
-		int leaderId = signedTC.signatures.keySet().iterator().next();
-		if (!keys.verify(leaderId, signedTC)) {
-			println("Failure: Investigating agency's signature (ID " + leaderId + ") does not verify!");
-			return;
-		}
-		println("Success, signature verified");
+			SignedTelecomCiphertext signedTC =
+					(SignedTelecomCiphertext) leaderIStream.readObject();
+			//There should be only one signature so far, with the leader's id
+			int leaderId = signedTC.signatures.keySet().iterator().next();
+			if (!keys.verify(leaderId, signedTC)) {
+				println("Failure: Investigating agency's signature (ID " + leaderId + ") does not verify!");
+				return;
+			}
+			println("Success, signature verified");
 
-		leaderOStream.writeObject(keys.sign(signedTC.telecomCiphertext));
-		leaderOStream.flush();
+			leaderOStream.writeObject(keys.sign(signedTC.telecomCiphertext));
+			leaderOStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -103,25 +103,25 @@ public class OversightAgency extends Agency {
 		// Enter main loop. The queue will be empty at first, so this has to be a
 		// do-while loop.
 		try {
-		do {
-			boolean readOK = readResponseFromLeader(distance);
-			if (!readOK) {
-				return; // error text is processed in readResponseFromLeader.
-			}
+			do {
+				boolean readOK = readResponseFromLeader(distance);
+				if (!readOK) {
+					return; // error text is processed in readResponseFromLeader.
+				}
 
-			// Look at what the next query to the telecoms should be and give the
-			// leader a signature on that telecom ciphertext.
-			QueueTCT queueNext = investigationQueue.pop();
-			println("Remaining in queue: " + investigationQueue.size());
-			distance = queueNext.distance;
-			leaderOStream.writeObject(keys.sign(queueNext.data));
-			leaderOStream.flush();
-		} while (!investigationQueue.isEmpty());
+				// Look at what the next query to the telecoms should be and give the
+				// leader a signature on that telecom ciphertext.
+				QueueTCT queueNext = investigationQueue.pop();
+				println("Remaining in queue: " + investigationQueue.size());
+				distance = queueNext.distance;
+				leaderOStream.writeObject(keys.sign(queueNext.data));
+				leaderOStream.flush();
+			} while (!investigationQueue.isEmpty());
 
-		// Read final response from leader agency, and send back null to indicate
-		// that we got it.
-		readResponseFromLeader(distance);
-		leaderOStream.writeObject(null);
+			// Read final response from leader agency, and send back null to indicate
+			// that we got it.
+			readResponseFromLeader(distance);
+			leaderOStream.writeObject(null);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;

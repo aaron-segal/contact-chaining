@@ -147,7 +147,7 @@ public class LeaderAgency extends Agency {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		// Remember that we still need to tell the first telecom about maxDegree.
 		// It is already in the list of known telecoms so we won't do this otherwise.
 		boolean needToInformInitialOwner = true;

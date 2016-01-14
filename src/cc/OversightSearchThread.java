@@ -3,17 +3,17 @@ package cc;
 import java.io.IOException;
 
 public class OversightSearchThread extends Thread {
-	
+
 	private OversightSocket oSocket;
 	private SignedTelecomResponse prevTR;
 	private byte[] signature = null;
-	
+
 	public OversightSearchThread(OversightSocket oSocket,
 			SignedTelecomResponse prevTR) {
 		this.oSocket = oSocket;
 		this.prevTR = prevTR;
 	}
-	
+
 	public void run() {
 		if (!oSocket.open) {
 			System.err.println("Error: Oversight socket " + oSocket.agencyId + " is closed!");
@@ -35,11 +35,11 @@ public class OversightSearchThread extends Thread {
 			oSocket.close();
 		}
 	}
-	
+
 	public byte[] getSignature(){
 		return signature;
 	}
-	
+
 	public int getAgencyId(){
 		return oSocket.agencyId;
 	}

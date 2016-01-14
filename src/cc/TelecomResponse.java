@@ -16,11 +16,11 @@ public class TelecomResponse implements Serializable {
 	public enum MsgType {
 		ERROR, DATA, NOT_FOUND, ALREADY_SENT, INVALID_SIGNATURE
 	}
-	
+
 	private MsgType msgType;
 	private BigInteger[] agencyCiphertext;
 	private TelecomCiphertext[] telecomCiphertexts;
-	
+
 	public TelecomResponse(BigInteger[] agencyCiphertext, TelecomCiphertext[] telecomCiphertexts) {
 		this.agencyCiphertext = agencyCiphertext;
 		this.telecomCiphertexts = telecomCiphertexts;
@@ -32,7 +32,7 @@ public class TelecomResponse implements Serializable {
 		telecomCiphertexts = null;
 		this.setMsgType(msgType);
 	}
-	
+
 	/**
 	 * @return the agencyCiphertext
 	 */
@@ -74,8 +74,8 @@ public class TelecomResponse implements Serializable {
 	public void setMsgType(MsgType msgType) {
 		this.msgType = msgType;
 	}
-	
 
-	
-	
+
+
+
 }

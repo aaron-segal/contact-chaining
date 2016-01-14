@@ -56,7 +56,7 @@ public class TelecomData {
 		alreadySent = new HashSet<Integer>();
 		this.maxDegree = Integer.MAX_VALUE;
 	}
-	
+
 	public TelecomResponse queryResponse(int userId, Keys keys, int distance) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
@@ -87,7 +87,7 @@ public class TelecomData {
 						keys.getPublicKey(owner),BigInteger.valueOf(neighbors[i])));
 			}
 		}
-		
+
 		// Mark that we have sent this userId.
 		alreadySent.add(userId);
 		return new TelecomResponse(agencyCiphertext, encryptedNeighbors);

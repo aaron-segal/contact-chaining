@@ -12,15 +12,15 @@ public class TelecomCiphertext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private BigInteger[] encryptedId;
 	private int owner;
-	
+
 	public TelecomCiphertext() {
 	}
-	
+
 	public TelecomCiphertext(BigInteger[] encryptedId, int owner) {
 		this.encryptedId = encryptedId;
 		this.owner = owner;
 	}
-	
+
 	/**
 	 * @return the encryptedId
 	 */

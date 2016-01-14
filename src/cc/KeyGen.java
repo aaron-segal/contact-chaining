@@ -14,22 +14,22 @@ public class KeyGen {
 	public static String PUBLIC_KEY = "PUBLIC_KEY";
 	public static String PRIME = "PRIME";
 	public static String GENERATOR = "GENERATOR";
-	
+
 	public static void usage() {
 		System.out.println("Usage: cc.KeyGen outfile [-i id] [-p prime -g generator]");
 		System.out.println(ElGamal.prime1024);
 	}
-	
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			usage();
 		}
 		String filename = args[0];
-		
+
 		Integer id = null;
 		BigInteger prime = null;
 		BigInteger generator = null;
-		
+
 		for (int i = 1; i < args.length; i +=2 ) {
 			if (args[i].equals("-i")) {
 				if (args.length == i+1) {
@@ -56,7 +56,7 @@ public class KeyGen {
 				usage();
 			}
 		}
-		
+
 		CommutativeElGamal elg = null;
 		if (id == null && prime == null && generator == null) {
 			elg = new CommutativeElGamal();
@@ -70,20 +70,20 @@ public class KeyGen {
 			System.err.println("Error: Must specify either prime AND generator, or neither.");
 			return;
 		}
-		
+
 		try {
 			File priv = new File(filename + "_priv");
 			File pub = new File(filename + "_pub");
-			
+
 			// if file doesn't exist, then create it
 			priv.createNewFile();
 			pub.createNewFile();
- 
+
 			FileWriter fwpriv = new FileWriter(priv.getAbsoluteFile());
 			FileWriter fwpub = new FileWriter(pub.getAbsoluteFile());
 			BufferedWriter bwpriv = new BufferedWriter(fwpriv);
 			BufferedWriter bwpub = new BufferedWriter(fwpub);
-			
+
 			bwpriv.write(ID + "=" + Integer.toString(elg.getID()));
 			bwpriv.newLine();
 			bwpriv.write(PRIVATE_KEY + "=" + elg.getPrivateKey().toString());
@@ -95,7 +95,7 @@ public class KeyGen {
 			}
 			bwpriv.flush();
 			bwpriv.close();
- 
+
 			bwpub.write(ID + "=" + Integer.toString(elg.getID()));
 			bwpub.newLine();
 			bwpub.write(PUBLIC_KEY + "=" + elg.getPublicKey().toString());
@@ -107,9 +107,9 @@ public class KeyGen {
 			}
 			bwpub.flush();
 			bwpub.close();
-			
+
 			System.out.println("Done");
- 
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

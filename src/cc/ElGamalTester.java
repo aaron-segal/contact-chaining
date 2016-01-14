@@ -5,19 +5,19 @@ import java.util.Random;
 import java.util.Arrays;
 
 public class ElGamalTester {
-	
+
 	private static void ShuffleArray(Object[] array)
 	{
-	    Object temp;
-	    int index;
-	    Random random = new Random();
-	    for (int i = array.length - 1; i > 0; i--)
-	    {
-	        index = random.nextInt(i + 1);
-	        temp = array[index];
-	        array[index] = array[i];
-	        array[i] = temp;
-	    }
+		Object temp;
+		int index;
+		Random random = new Random();
+		for (int i = array.length - 1; i > 0; i--)
+		{
+			index = random.nextInt(i + 1);
+			temp = array[index];
+			array[index] = array[i];
+			array[i] = temp;
+		}
 	}
 
 	public static void main(String[] args) {
@@ -29,7 +29,7 @@ public class ElGamalTester {
 			phs[i] = new PohligHellman();
 			elgs[i] = new CommutativeElGamal(x-i);
 		}
-		
+
 		final BigInteger[] datum = {new BigInteger(60, rand)};
 		System.out.println("A : " + datum[0].toString());
 		BigInteger[][] encrypted = new BigInteger[elgs.length][];
@@ -41,9 +41,9 @@ public class ElGamalTester {
 			encrypted[i] = elgs[i].encrypt(encrypted[i-1]);
 			System.out.println("B" + i + ":" + Arrays.toString(encrypted[i]));
 		}
-		
+
 		ShuffleArray(elgs);
-		
+
 		partcrypted[0] = elgs[0].partialDecrypt(encrypted[elgs.length-1]);
 		for (int j = 1; j < partcrypted[0].length; j += 2) {
 			partcrypted[0][j] = phs[0].encrypt(partcrypted[0][j]);
@@ -58,19 +58,19 @@ public class ElGamalTester {
 			partcrypted[i][partcrypted[i].length - 1] = phs[i].encrypt(partcrypted[i][partcrypted[i].length - 1]);
 			System.out.println("C" + i + ":" + Arrays.toString(partcrypted[i]));
 		}
-		
+
 		ShuffleArray(phs);
-		
+
 		decrypted[0] = new BigInteger[]{phs[0].decrypt(partcrypted[phs.length-1][0])};
 		System.out.println("D0:" + Arrays.toString(decrypted[0]));
 		for (int i = 1; i < phs.length; i++) {
 			decrypted[i] = new BigInteger[]{phs[i].decrypt(decrypted[i-1][0])};
 			System.out.println("D" + i + ":" + Arrays.toString(decrypted[i]));
 		}
-		
-		
+
+
 		System.out.println(decrypted[elgs.length-1][0].equals(datum[0]));
-		
+
 		BigInteger datum2 = datum[0];
 		System.out.println("A : " + datum2.toString());
 		for (int i = 0; i < phs.length; i++) {
@@ -81,7 +81,7 @@ public class ElGamalTester {
 			datum2 = phs[i].decrypt(datum2);
 			System.out.println("C" + i + ": " + datum2.toString());
 		}
-		
+
 	}
 
 }

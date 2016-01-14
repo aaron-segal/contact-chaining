@@ -10,9 +10,9 @@ public class PohligHellman {
 	private BigInteger p; // prime number
 	private BigInteger encryptionKey;
 	private BigInteger decryptionKey;
-	
+
 	public static BigInteger presetPrime = ElGamal.prime1024;
-	
+
 
 	/**
 	 * Generates a new PohligHellman object with preset group and randomly generated keys.
@@ -83,7 +83,7 @@ public class PohligHellman {
 	protected BigInteger getDecryptionKey() {
 		return decryptionKey;
 	}
-	*/
+	 */
 
 	/**
 	 * Encrypts data using this object's key.

@@ -206,7 +206,7 @@ public class Keys {
 	public Signature getSigner() {
 		return signer;
 	}
-	
+
 	/**
 	 * Returns a Signature object for verifying another user's signature
 	 * @param id The user ID whose signature you want to verify
@@ -215,7 +215,7 @@ public class Keys {
 	public Signature getVerifier(int id) {
 		return verifiers.get(id);
 	}
-	
+
 	/**
 	 * Uses our keys to sign a telecom ciphertext.
 	 * @param ciphertext The telecom ciphertext to sign.
@@ -234,7 +234,7 @@ public class Keys {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Uses our keys to sign a telecom response.
 	 * @param response The telecom response to sign.
@@ -253,7 +253,7 @@ public class Keys {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Uses a party's key to verify a telecom ciphertext.
 	 * @param id The id of the party who signed the ciphertext.

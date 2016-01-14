@@ -87,7 +87,7 @@ public class DataGenLogNormal {
 				System.out.println(currId + " users generated");
 			}
 		}
-		
+
 		if (nUsers % 100 != 0) {
 			System.out.println(nUsers + " users generated");
 		}

@@ -34,5 +34,5 @@ public class OversightSocket {
 		} catch (IOException e) {}
 		open = false;
 	}
-	
+
 }

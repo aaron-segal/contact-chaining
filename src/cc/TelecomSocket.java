@@ -30,5 +30,5 @@ public class TelecomSocket {
 		} catch (IOException e) {}
 		open = false;
 	}
-	
+
 }

@@ -3,7 +3,7 @@ package cc;
 import java.math.BigInteger;
 
 public class CommutativeElGamal extends ElGamal {
-	
+
 	private int id;
 
 	/**
@@ -117,7 +117,7 @@ public class CommutativeElGamal extends ElGamal {
 		return out;
 	}
 
-	
+
 	/*
 	 * This method is not recommended. It 
 	 * Encrypts data, using public key that belongs to the same group as this ElGamal object.
@@ -128,7 +128,7 @@ public class CommutativeElGamal extends ElGamal {
 	public BigInteger[] encrypt(BigInteger publicKey, BigInteger data) {
 		return encrypt(0, publicKey, data);
 	}
-	*/
+	 */
 
 	public BigInteger[] encrypt(BigInteger data) {
 		return encrypt(id, getPublicKey(), data);

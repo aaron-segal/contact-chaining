@@ -38,7 +38,7 @@ public class DataGenExperimental {
 	public static int provider(int userId, int numTelecoms) {
 		return userId % numTelecoms;
 	}
-	
+
 	public static int randDegree(Random rand) {
 		if (rand.nextDouble() < LARGE_CHANCE) {
 			return rand.nextInt(LARGE_MAX - LARGE_MIN + 1) + LARGE_MIN;
@@ -68,9 +68,9 @@ public class DataGenExperimental {
 			HashSet<Integer> userData = new HashSet<Integer>();
 			graph.put(currId, userData);
 		}
-		
-        LogNormalDistribution lnd = new LogNormalDistribution(1.6389,1.5454);
-		
+
+		LogNormalDistribution lnd = new LogNormalDistribution(1.6389,1.5454);
+
 		// For each user, generate a set of phone calls it has made.
 		for (int currId = 1; currId <= nUsers; currId++) {
 			if (currId % 10 == 0) {

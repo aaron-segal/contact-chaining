@@ -88,7 +88,7 @@ public class DataGen {
 			// Add this user's data to the appropriate telecom
 			graph.get(provider(currId, nTelecoms)).put(currId, userData);
 		}
-		
+
 		System.out.println(nUsers + " users generated");
 
 		// Now store data to file, converting from HashSet<Integer> to int[].
