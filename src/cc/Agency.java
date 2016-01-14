@@ -30,7 +30,9 @@ public abstract class Agency {
 	protected int id;
 	protected Keys keys;
 	protected int targetId, maxDistance, maxDegree;
+	protected int targetDegree;
 	protected Properties config;
+
 
 	private long startSetupTime, startProtoTime, finishTime;
 	private Date timeStamp; // The date and time when the protocol began
@@ -225,7 +227,7 @@ public abstract class Agency {
 		/* 
 		 * If a log file has been specified, save timing info to it.
 		 * The top line of the log file should be:
-		 * Timestamp,Agencies,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),
+		 * Timestamp,Agencies,Degree of target,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),
 		 */
 		if (suppressTiming || config.getProperty(TIMING_RECORD_PATH, "").isEmpty()) {
 			return;
@@ -239,6 +241,7 @@ public abstract class Agency {
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(sdf.format(timeStamp) + ",");
 			bw.write(numAgencies + ",");
+			bw.write(targetDegree + ",");
 			bw.write(agencyCiphertexts.size() + ",");
 			bw.write(maxDistance + ",");
 			bw.write(maxDegree + ",");

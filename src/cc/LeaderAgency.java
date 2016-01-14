@@ -132,6 +132,8 @@ public class LeaderAgency extends Agency {
 					println(prevResponse.telecomResponse.getTelecomCiphertexts().length + 
 							" added to queue");
 				}
+				// Store degree of target for timing data
+				targetDegree = prevResponse.telecomResponse.getTelecomCiphertexts().length;
 			} else {
 				//println("MsgType: " + signedTR.telecomResponse.getMsgType());
 				System.err.println("Cannot continue; got initial MsgType " + prevResponse.telecomResponse.getMsgType());

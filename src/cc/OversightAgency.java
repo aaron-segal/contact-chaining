@@ -63,7 +63,8 @@ public class OversightAgency extends Agency {
 			int leaderTarget = leaderIStream.readInt();
 			if (leaderTarget != targetId) {
 				println("Failure: Investigating agency gave target " + leaderTarget +
-						" but out target is " + targetId + ".");
+						" but our target is " + targetId + ".");
+				return;
 			} else {
 				println("Connected, targeting id " + targetId);
 			}
@@ -164,6 +165,10 @@ public class OversightAgency extends Agency {
 				}
 				println(telecomResponse.getTelecomCiphertexts().length + 
 						" added to queue");
+				// Store degree of target for timing data
+				if (distance == maxDistance) {
+					targetDegree = telecomResponse.getTelecomCiphertexts().length;
+				}
 			}
 		} else if (telecomResponse.getMsgType() == TelecomResponse.MsgType.ALREADY_SENT) {
 			println("MsgType: " + telecomResponse.getMsgType());
