@@ -9,11 +9,11 @@ import java.math.BigInteger;
 
 public class KeyGen {
 
-	public static String ID = "ID";
-	public static String PRIVATE_KEY = "PRIVATE_KEY";
-	public static String PUBLIC_KEY = "PUBLIC_KEY";
-	public static String PRIME = "PRIME";
-	public static String GENERATOR = "GENERATOR";
+	public static final String ID = "ID";
+	public static final String PRIVATE_KEY = "PRIVATE_KEY";
+	public static final String PUBLIC_KEY = "PUBLIC_KEY";
+	public static final String PRIME = "PRIME";
+	public static final String GENERATOR = "GENERATOR";
 
 	public static void usage() {
 		System.out.println("Usage: cc.KeyGen outfile [-i id] [-p prime -g generator]");

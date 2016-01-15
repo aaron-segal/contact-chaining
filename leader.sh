@@ -2,9 +2,9 @@
 cd bin
 for l in 2 3
 do
-for d in 25 50 75 100 150 200
+for d in 25 50 75 100 150 200 500
 do
-for x in 1 2 3 4 5
+for x in 1 2 3
 do
 java cc.LeaderAgency ../tests/lognorm/conf/agencies.conf -c ../tests/lognorm/conf/agency1.conf -d ${d} -l ${l} -q
 sleep 1

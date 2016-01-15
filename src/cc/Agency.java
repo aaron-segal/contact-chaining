@@ -28,7 +28,7 @@ public abstract class Agency {
 
 	protected int numAgencies, numTelecoms;
 	protected int id;
-	protected Keys keys;
+	protected AgencyKeys keys;
 	protected int targetId, maxDistance, maxDegree;
 	protected int targetDegree;
 	protected Properties config;
@@ -177,7 +177,7 @@ public abstract class Agency {
 		}
 		println("ID = " + id);
 		try {
-			keys = new Keys(config.getProperty(PRIVATE_KEY),
+			keys = new AgencyKeys(config.getProperty(PRIVATE_KEY),
 					config.getProperty(PUBLIC_KEYS),
 					config.getProperty(SIGNING_KEYPATH),
 					id,

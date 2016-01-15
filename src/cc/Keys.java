@@ -3,7 +3,6 @@ package cc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -15,56 +14,42 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Scanner;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 
 /**
  * Stores one user's key data: a single private key, and many public keys.
  * @author Aaron Segal
  *
  */
-public class Keys {
-	private CommutativeElGamal privateKey;
-	private HashMap<Integer, BigInteger> publicKeys;
+public abstract class Keys {
+
+	public final static String PADDING = "/ECB/PKCS1Padding"; 
+
+	private HashMap<Integer, BigInteger> agencyPublicKeys;
+	private HashMap<Integer, PublicKey> telecomPublicKeys;
 	private PrivateKey signingKey;
 	private Signature signer;
 	private HashMap<Integer, PublicKey> verifyKeys;
 	private HashMap<Integer, Signature> verifiers;
+	private HashMap<Integer, Cipher> encrypters;
 	private int[] agencyIds;
 	private int id;
 
 	public Keys(String privateKeyFilename, String publicKeyFilename,
-			String signatureKeysPath, int id, int[] agencyIds)
+			String keysPath, int id, int[] agencyIds)
 					throws IOException {
 		this.id = id;
-		loadPrivateKey(privateKeyFilename);
-		loadPublicKeys(publicKeyFilename);
-		loadSignatureKeys(signatureKeysPath);
 		this.agencyIds = agencyIds;
+		loadAgencyPublicKeys(publicKeyFilename);
+		loadKeys(keysPath);
 	}
 
-	private void loadPrivateKey(String privateKeyFilename) throws IOException {
-		FileReader pkreader= new FileReader(privateKeyFilename);
-		Properties pkDefault = new Properties();
-		pkDefault.setProperty(KeyGen.PRIME, ElGamal.prime1024.toString());
-		pkDefault.setProperty(KeyGen.GENERATOR, ElGamal.generator1024.toString());
-		Properties pk = new Properties(pkDefault);
-		pk.load(pkreader);
-		pkreader.close();
-		int elgid = Integer.parseInt(pk.getProperty(KeyGen.ID));
-		BigInteger privateKey = new BigInteger(pk.getProperty(KeyGen.PRIVATE_KEY));
-		String primeString = pk.getProperty(KeyGen.PRIME);
-		String genString = pk.getProperty(KeyGen.GENERATOR);
-		if (primeString != null && genString != null) {
-			this.privateKey = new CommutativeElGamal(elgid, new BigInteger(primeString), new BigInteger(genString), privateKey);
-		} else {
-			this.privateKey = new CommutativeElGamal(elgid, privateKey);
-		}
-	}
-
-	private void loadPublicKeys(String publicKeyFilename) throws IOException {
-		publicKeys = new HashMap<Integer, BigInteger>();
+	private void loadAgencyPublicKeys(String publicKeyFilename) throws IOException {
+		agencyPublicKeys = new HashMap<Integer, BigInteger>();
 		File pub = null;
 		Scanner spub;
 		pub = new File(publicKeyFilename);
@@ -93,20 +78,29 @@ public class Keys {
 			if (lineParts[0].equalsIgnoreCase(KeyGen.ID)) {
 				currId = Integer.parseInt(lineParts[1]);
 			} else if (lineParts[0].equalsIgnoreCase(KeyGen.PUBLIC_KEY)) {
-				publicKeys.put(currId, new BigInteger(lineParts[1]));
+				// We will only record this key if it belongs to an agency.
+				// Other ElGamal keys are ignored.
+				for (int agencyId : agencyIds) {
+					if (currId == agencyId) {
+						agencyPublicKeys.put(currId, new BigInteger(lineParts[1]));
+						break;
+					}
+				}
 				currId = Integer.MIN_VALUE;
 			}
 		}
 		spub.close(); 
 	}
 
-	private void loadSignatureKeys(String signatureKeysPath) throws IOException {
+	private void loadKeys(String signatureKeysPath) throws IOException {
 		verifyKeys = new HashMap<Integer,PublicKey>();
 		verifiers = new HashMap<Integer, Signature>();
+		telecomPublicKeys = new HashMap<Integer, PublicKey>();
+		encrypters = new HashMap<Integer, Cipher>();
 		File path = new File(signatureKeysPath);
 		for (File keyFile : path.listFiles()) {
-			if (keyFile.getName().equals(SigningKeyGen.SIGNING_PREFIX + id +
-					SigningKeyGen.SUFFIX)) {
+			if (keyFile.getName().equals(CryptoKeyGen.SIGNING_PREFIX + id +
+					CryptoKeyGen.SUFFIX)) {
 				// If this is our signing key, read it
 				FileInputStream signingKeyInput = new FileInputStream(keyFile);
 				byte[] signingKeyBytes = new byte[1024];
@@ -125,11 +119,11 @@ public class Keys {
 					e.printStackTrace();
 					return;
 				}
-			} else if (keyFile.getName().startsWith(SigningKeyGen.VERIFY_PREFIX)) {
+			} else if (keyFile.getName().startsWith(CryptoKeyGen.VERIFY_PREFIX)) {
 				// If this is a verification key, get its id
 				String strippedFilename = keyFile.getName();
-				strippedFilename = strippedFilename.replaceAll(SigningKeyGen.VERIFY_PREFIX,"");
-				strippedFilename = strippedFilename.replaceAll(SigningKeyGen.SUFFIX,"");
+				strippedFilename = strippedFilename.replaceAll(CryptoKeyGen.VERIFY_PREFIX,"");
+				strippedFilename = strippedFilename.replaceAll(CryptoKeyGen.SUFFIX,"");
 				int keyId = Integer.parseInt(strippedFilename);
 				// read it
 				FileInputStream verificationKeyInput = new FileInputStream(keyFile);
@@ -141,7 +135,7 @@ public class Keys {
 				X509EncodedKeySpec verKeySpec =
 						new X509EncodedKeySpec(verificationKeyBytes);
 				try {
-					KeyFactory keyFactory = KeyFactory.getInstance("DSA", "SUN");
+					KeyFactory keyFactory = KeyFactory.getInstance(CryptoKeyGen.SIGNING_ALGORITHM, "SUN");
 					verifyKeys.put(keyId, keyFactory.generatePublic(verKeySpec));
 					Signature verifier = Signature.getInstance("SHA1withDSA", "SUN");
 					verifier.initVerify(verifyKeys.get(keyId));
@@ -150,26 +144,37 @@ public class Keys {
 					e.printStackTrace();
 					return;
 				}
+			} else if (keyFile.getName().startsWith(CryptoKeyGen.PUBLIC_PREFIX)) {
+				// If this is a public key, get its id
+				String strippedFilename = keyFile.getName();
+				strippedFilename = strippedFilename.replaceAll(CryptoKeyGen.PUBLIC_PREFIX,"");
+				strippedFilename = strippedFilename.replaceAll(CryptoKeyGen.SUFFIX,"");
+				int keyId = Integer.parseInt(strippedFilename);
+				// read it
+				FileInputStream publicKeyInput = new FileInputStream(keyFile);
+				byte[] publicKeyBytes = new byte[1024];
+				int read = publicKeyInput.read(publicKeyBytes);
+				publicKeyBytes = Arrays.copyOf(publicKeyBytes, read);
+				publicKeyInput.close();
+				// and parse it as a public key.
+				X509EncodedKeySpec pubKeySpec =
+						new X509EncodedKeySpec(publicKeyBytes);
+				try {
+					KeyFactory keyFactory = KeyFactory.getInstance(CryptoKeyGen.ENCRYPTION_ALGORITHM);
+					telecomPublicKeys.put(keyId, keyFactory.generatePublic(pubKeySpec));
+					Cipher encrypter = Cipher.getInstance(CryptoKeyGen.ENCRYPTION_ALGORITHM + PADDING);
+					encrypter.init(Cipher.ENCRYPT_MODE, telecomPublicKeys.get(keyId));
+					encrypters.put(keyId, encrypter);
+				} catch (Exception e) {
+					e.printStackTrace();
+					return;
+				}
 			}
 		}
 	}
 
-	/**
-	 * @return the privateKey
-	 */
-	public CommutativeElGamal getPrivateKey() {
-		return privateKey;
-	}
-
-	/**
-	 * @param privateKey the privateKey to set
-	 */
-	public void setPrivateKey(CommutativeElGamal privateKey) {
-		this.privateKey = privateKey;
-	}
-
-	public BigInteger getPublicKey(int keyId) {
-		return publicKeys.get(keyId);
+	public BigInteger getAgencyPublicKey(int keyId) {
+		return agencyPublicKeys.get(keyId);
 	}
 
 	/**
@@ -293,5 +298,17 @@ public class Keys {
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	public byte[] encrypt(int receiverId, int data) {
+		byte[] byteData = BigInteger.valueOf(data).toByteArray();
+		try {
+			return encrypters.get(receiverId).doFinal(byteData);
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

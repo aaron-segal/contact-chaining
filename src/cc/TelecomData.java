@@ -71,20 +71,18 @@ public class TelecomData {
 		CommutativeElGamal commEncrypter = new CommutativeElGamal();
 		for (int agencyId : keys.getAgencyIds()) {
 			agencyCiphertext = commEncrypter.encrypt(agencyId,
-					keys.getPublicKey(agencyId), agencyCiphertext);
+					keys.getAgencyPublicKey(agencyId), agencyCiphertext);
 		}
 
 		// Compute set of neighbors unless distance == 0
 		int[] neighbors = contacts.get(userId);
 		TelecomCiphertext[] encryptedNeighbors = new TelecomCiphertext[neighbors.length];
 		if (distance > 0 && neighbors.length <= maxDegree) {
-			ElGamal encrypter = new ElGamal();
 			for (int i = 0; i < neighbors.length; i++) {
 				int owner = DataGen.provider(neighbors[i], numTelecoms);
 				encryptedNeighbors[i] = new TelecomCiphertext();
 				encryptedNeighbors[i].setOwner(owner);
-				encryptedNeighbors[i].setEncryptedId(encrypter.encrypt(
-						keys.getPublicKey(owner),BigInteger.valueOf(neighbors[i])));
+				encryptedNeighbors[i].setEncryptedId(keys.encrypt(owner,neighbors[i]));
 			}
 		}
 

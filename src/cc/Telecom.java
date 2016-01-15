@@ -1,8 +1,8 @@
 package cc;
 
+import java.security.GeneralSecurityException;
 import java.util.*;
 import java.io.*; 
-import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -14,7 +14,7 @@ public class Telecom {
 	protected int port;
 	protected int numAgencies, numTelecoms, id;
 	protected TelecomData data;
-	protected Keys keys;
+	protected TelecomKeys keys;
 	protected ServerSocket listenSocket = null;
 
 	private Socket agencySocket;
@@ -96,7 +96,7 @@ public class Telecom {
 		id = Integer.parseInt(config.getProperty(ID));
 		println("ID = " + id);
 		try {
-			keys = new Keys(config.getProperty(PRIVATE_KEY),
+			keys = new TelecomKeys(config.getProperty(PRIVATE_KEY),
 					config.getProperty(PUBLIC_KEYS),
 					config.getProperty(SIGNING_KEYPATH),
 					id,
@@ -160,14 +160,17 @@ public class Telecom {
 					if (data.getMaxDegree() == Integer.MAX_VALUE && signedTC.maxDegree > 0) {
 						data.setMaxDegree(signedTC.maxDegree);
 					}
-					BigInteger queryId = keys.getPrivateKey().
-							decrypt(signedTC.telecomCiphertext.getEncryptedId());
-					TelecomResponse response = data.queryResponse(queryId.intValue(), keys, signedTC.distance);
+					int queryId =
+							keys.decrypt(signedTC.telecomCiphertext.getEncryptedId());
+					TelecomResponse response = data.queryResponse(queryId, keys, signedTC.distance);
 					sendResponse(response);
 				}
 			} catch (IOException e) {
 				System.err.println("Connection lost. Waiting for new connection");
 			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				return;
+			} catch (GeneralSecurityException e) {
 				e.printStackTrace();
 				return;
 			}

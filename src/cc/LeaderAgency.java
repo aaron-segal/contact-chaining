@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -81,9 +80,7 @@ public class LeaderAgency extends Agency {
 		// We are now all connected up. Now initialize the search with a
 		// TelecomCiphertext representing the target.
 		int initialOwner = DataGen.provider(targetId, numTelecoms);
-		BigInteger[] initialTCT = new CommutativeElGamal().
-				encrypt(keys.getPublicKey(initialOwner),
-						BigInteger.valueOf(targetId));
+		byte[] initialTCT = keys.encrypt(initialOwner, targetId);
 		TelecomCiphertext startTCT = new TelecomCiphertext(initialTCT, initialOwner);
 		investigationQueue.addLast(new QueueTCT(startTCT, maxDistance));
 

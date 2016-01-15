@@ -1,8 +1,6 @@
 package cc;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-
 
 /**
  * A ciphertext to be decrypted by a telecom.
@@ -10,13 +8,13 @@ import java.math.BigInteger;
  */
 public class TelecomCiphertext implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private BigInteger[] encryptedId;
+	private byte[] encryptedId;
 	private int owner;
 
 	public TelecomCiphertext() {
 	}
 
-	public TelecomCiphertext(BigInteger[] encryptedId, int owner) {
+	public TelecomCiphertext(byte[] encryptedId, int owner) {
 		this.encryptedId = encryptedId;
 		this.owner = owner;
 	}
@@ -24,13 +22,13 @@ public class TelecomCiphertext implements Serializable {
 	/**
 	 * @return the encryptedId
 	 */
-	public BigInteger[] getEncryptedId() {
+	public byte[] getEncryptedId() {
 		return encryptedId;
 	}
 	/**
 	 * @param encryptedId the encryptedId to set
 	 */
-	public void setEncryptedId(BigInteger[] encryptedId) {
+	public void setEncryptedId(byte[] encryptedId) {
 		this.encryptedId = encryptedId;
 	}
 	/**
