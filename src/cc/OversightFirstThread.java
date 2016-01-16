@@ -15,14 +15,18 @@ public class OversightFirstThread extends Thread {
 	}
 
 	public void run() {
-		if (!oSocket.open) {
-			System.err.println("Error: Oversight socket " + oSocket.agencyId + " is closed!");
-			return;
-		}
 		try {
+			// SYN protocol: Learn agency's id, tell it targetId
+			oSocket.setAgencyId(oSocket.inputStream.readInt());
+			oSocket.lAgency.println("Read oversight agency id " + oSocket.getAgencyId());
+			oSocket.outputStream.writeInt(oSocket.lAgency.getTargetId());
+			oSocket.outputStream.flush();
+			oSocket.open = true;
+
 			// Send the signed telecom ciphertext to the oversight agency
 			oSocket.outputStream.writeObject(stc);
 			oSocket.outputStream.flush();
+
 			// Read the new signature back
 			signature = (byte[]) oSocket.inputStream.readObject();
 		} catch (IOException e) {
@@ -39,6 +43,6 @@ public class OversightFirstThread extends Thread {
 	}
 
 	public int getAgencyId(){
-		return oSocket.agencyId;
+		return oSocket.getAgencyId();
 	}
 }

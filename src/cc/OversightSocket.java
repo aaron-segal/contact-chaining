@@ -8,7 +8,7 @@ import java.net.Socket;
 public class OversightSocket {
 
 	public Socket socket;
-	public int agencyId;
+	private int agencyId = Integer.MIN_VALUE;
 	public ObjectInputStream inputStream;
 	public ObjectOutputStream outputStream;
 	public LeaderAgency lAgency;
@@ -19,8 +19,6 @@ public class OversightSocket {
 		this.lAgency = lAgency;
 		inputStream = new ObjectInputStream(socket.getInputStream());
 		outputStream = new ObjectOutputStream(socket.getOutputStream());
-		OversightSyncThread ost = new OversightSyncThread(this);
-		ost.start();
 	}
 
 	public void close() {
@@ -33,6 +31,24 @@ public class OversightSocket {
 			socket.close();
 		} catch (IOException e) {}
 		open = false;
+	}
+
+	/**
+	 * Gets the agency ID, but throws a RuntimeException if the agency ID has not been set yet.
+	 * @return the agencyId, if it has been set.
+	 */
+	public int getAgencyId() {
+		if (agencyId == Integer.MIN_VALUE) {
+			throw new RuntimeException("Agency ID requested, but has not been sent yet!");
+		}
+		return agencyId;
+	}
+
+	/**
+	 * @param agencyId the agencyId to set
+	 */
+	public void setAgencyId(int agencyId) {
+		this.agencyId = agencyId;
 	}
 
 }

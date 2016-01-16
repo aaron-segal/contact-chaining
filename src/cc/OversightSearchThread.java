@@ -16,7 +16,7 @@ public class OversightSearchThread extends Thread {
 
 	public void run() {
 		if (!oSocket.open) {
-			System.err.println("Error: Oversight socket " + oSocket.agencyId + " is closed!");
+			System.err.println("Error: Oversight socket " + oSocket.getAgencyId() + " is closed!");
 			return;
 		}
 		try {
@@ -41,6 +41,6 @@ public class OversightSearchThread extends Thread {
 	}
 
 	public int getAgencyId(){
-		return oSocket.agencyId;
+		return oSocket.getAgencyId();
 	}
 }
