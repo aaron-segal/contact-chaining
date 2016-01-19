@@ -30,12 +30,12 @@ public abstract class Keys {
 	public final static String PADDING = "/ECB/PKCS1Padding"; 
 
 	private HashMap<Integer, BigInteger> agencyPublicKeys;
-	private HashMap<Integer, PublicKey> telecomPublicKeys;
+	protected HashMap<Integer, PublicKey> telecomPublicKeys;
 	private PrivateKey signingKey;
 	private Signature signer;
 	private HashMap<Integer, PublicKey> verifyKeys;
 	private HashMap<Integer, Signature> verifiers;
-	private HashMap<Integer, Cipher> encrypters;
+	protected HashMap<Integer, Cipher> encrypters;
 	private int[] agencyIds;
 	private int id;
 
@@ -300,6 +300,12 @@ public abstract class Keys {
 		}
 	}
 
+	/**
+	 * Encrypts an integer into a telecom ciphertext.
+	 * @param receiverId The telecom who will receive this ciphertext.
+	 * @param data The integer to encrypt
+	 * @return The encrypted data.
+	 */
 	public byte[] encrypt(int receiverId, int data) {
 		byte[] byteData = BigInteger.valueOf(data).toByteArray();
 		try {

@@ -12,6 +12,7 @@ public class Telecom {
 	public static boolean quiet = false;
 
 	protected int port;
+	protected int maxThreads;
 	protected int numAgencies, numTelecoms, id;
 	protected TelecomData data;
 	protected TelecomKeys keys;
@@ -21,6 +22,10 @@ public class Telecom {
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
 
+	// Included for additional safety. Use the configurable
+	// MAX_THREADS instead.
+	public static final int MAX_THREADS_ALLOWED = 8;
+
 	public static final String PORT = "PORT";
 	public static final String INPUT_FILE = "INPUT";
 	public static final String ID = "ID";
@@ -29,9 +34,10 @@ public class Telecom {
 	public static final String NUM_AGENCIES = "AGENCIES";
 	public static final String NUM_TELECOMS = "TELECOMS";
 	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
+	public static final String MAX_THREADS = "MAXTHREADS";
 
 	private static void usage() {
-		System.err.println("Usage: java cc.Telecom config_file [-c config_file] [-i input_data_file] [-k private_key_file] [-q]");
+		System.err.println("Usage: java cc.Telecom config_file [-c config_file] [-i input_data_file] [-k private_key_file] [-t threads] [-q]");
 	}
 
 	public Telecom(String[] args) {
@@ -83,6 +89,13 @@ public class Telecom {
 					config.setProperty(PRIVATE_KEY, args[i+1]);
 					i++;
 				}
+			} else if (args[i].equals("-t")) {
+				if (args.length == i+1) {
+					usage();
+					return;
+				} else {
+					config.setProperty(MAX_THREADS, args[i+1]);
+				}
 			} else if (args[i].equals("-q")) {
 				quiet = true;
 			} else {
@@ -93,6 +106,15 @@ public class Telecom {
 		port = Integer.parseInt(config.getProperty(PORT));
 		numAgencies = Integer.parseInt(config.getProperty(NUM_AGENCIES, "0"));
 		numTelecoms = Integer.parseInt(config.getProperty(NUM_TELECOMS, "0"));
+		maxThreads = Integer.parseInt(config.getProperty(MAX_THREADS, "1"));
+		if (maxThreads < 0 || maxThreads > MAX_THREADS_ALLOWED) {
+			System.err.println("Number of threads must be between 1 and " + MAX_THREADS_ALLOWED);
+			usage();
+			return;
+		} else if (maxThreads == 0) {
+			System.err.println("Treating 0 threads as " + MAX_THREADS_ALLOWED);
+			maxThreads = MAX_THREADS_ALLOWED;
+		}
 		id = Integer.parseInt(config.getProperty(ID));
 		println("ID = " + id);
 		try {
@@ -100,13 +122,15 @@ public class Telecom {
 					config.getProperty(PUBLIC_KEYS),
 					config.getProperty(SIGNING_KEYPATH),
 					id,
-					Agency.getAgencyIds(numAgencies));
+					Agency.getAgencyIds(numAgencies),
+					maxThreads);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
 		}
 
-		data = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms);
+		data = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms, keys,
+				maxThreads);
 
 		try {
 			listenSocket = new ServerSocket(port);
@@ -162,7 +186,7 @@ public class Telecom {
 					}
 					int queryId =
 							keys.decrypt(signedTC.telecomCiphertext.getEncryptedId());
-					TelecomResponse response = data.queryResponse(queryId, keys, signedTC.distance);
+					TelecomResponse response = data.queryResponse(queryId, signedTC.distance);
 					sendResponse(response);
 				}
 			} catch (IOException e) {

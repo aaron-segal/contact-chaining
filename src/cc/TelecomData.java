@@ -12,7 +12,14 @@ import cc.TelecomResponse.MsgType;
 /**
  * Container class to hold a telecom's data regarding its users.
  * @author Aaron Segal
- *
+ */
+
+/*
+ * How we decide how many threads to spawn for a given job:
+ * If we have less than 2*MIN_ITEMS_PER_THREAD, we just do 1 thread.
+ * At 2*MIN_ITEMS_PER_THREAD, and every interval of MIN_ITEMS_PER_THREAD beyond,
+ * we start a new thread up to a maximum of maxThreads * MIN_ITEMS_PER_THREAD.
+ * Beyond that, we just divide up the items as evenly as we can among the threads.
  */
 
 public class TelecomData {
@@ -24,9 +31,21 @@ public class TelecomData {
 	private int numTelecoms;
 	// The maximum degree of users the agencies are interested in
 	private int maxDegree;
+	// The maximum number of threads we can use for decryption.
+	private int maxThreads;
+	// Keys used for crypto operations.
+	private TelecomKeys keys;
+
+	// currentPlaintext and currentCiphertext are accessed by encryption threads
+	public int[] currentPlaintexts;
+	public TelecomCiphertext[] currentCiphertexts;
+
+	// We won't consider starting a new thread for encryption unless we can give it
+	// this many items to work on.
+	public static final int MIN_ITEMS_PER_THREAD = 10;
 
 	@SuppressWarnings("unchecked")
-	public TelecomData(String filename, int numTelecoms) {
+	public TelecomData(String filename, int numTelecoms, TelecomKeys keys, int maxThreads) {
 		try {
 			FileInputStream fis = new FileInputStream(filename);
 			ObjectInputStream ois = new ObjectInputStream(fis);
@@ -40,6 +59,8 @@ public class TelecomData {
 		alreadySent = new HashSet<Integer>();
 		this.numTelecoms = numTelecoms;
 		this.maxDegree = Integer.MAX_VALUE;
+		this.keys = keys;
+		this.maxThreads = maxThreads;
 	}
 
 	public TelecomData(HashMap<Integer, int[]> contacts, int numTelecoms) {
@@ -57,7 +78,7 @@ public class TelecomData {
 		this.maxDegree = Integer.MAX_VALUE;
 	}
 
-	public TelecomResponse queryResponse(int userId, Keys keys, int distance) {
+	public TelecomResponse queryResponse(int userId, int distance) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
 			return new TelecomResponse(MsgType.NOT_FOUND);
@@ -75,20 +96,38 @@ public class TelecomData {
 		}
 
 		// Compute set of neighbors unless distance == 0
-		int[] neighbors = contacts.get(userId);
-		TelecomCiphertext[] encryptedNeighbors = new TelecomCiphertext[neighbors.length];
-		if (distance > 0 && neighbors.length <= maxDegree) {
-			for (int i = 0; i < neighbors.length; i++) {
-				int owner = DataGen.provider(neighbors[i], numTelecoms);
-				encryptedNeighbors[i] = new TelecomCiphertext();
-				encryptedNeighbors[i].setOwner(owner);
-				encryptedNeighbors[i].setEncryptedId(keys.encrypt(owner,neighbors[i]));
+		currentPlaintexts = contacts.get(userId);
+		currentCiphertexts = new TelecomCiphertext[currentPlaintexts.length];
+		if (distance > 0 && currentPlaintexts.length <= maxDegree) {
+			int threads = currentPlaintexts.length / MIN_ITEMS_PER_THREAD;
+			threads = Math.max(threads, 1);
+			threads = Math.min(threads, maxThreads);
+			int itemsPerThread = (currentPlaintexts.length + threads - 1) / threads;
+
+			// Do encryption in threads
+			EncryptWorker[] workers = new EncryptWorker[threads];
+			for (int i = 0; i < workers.length; i++) {
+				workers[i] = new EncryptWorker(this, itemsPerThread * i, itemsPerThread, keys, i);
+				workers[i].start();
+			}
+			for (int i = 0; i < workers.length; i++) {
+				try {
+					workers[i].join();
+				} catch (InterruptedException e) {
+				}
 			}
 		}
 
 		// Mark that we have sent this userId.
 		alreadySent.add(userId);
-		return new TelecomResponse(agencyCiphertext, encryptedNeighbors);
+		return new TelecomResponse(agencyCiphertext, currentCiphertexts);
+	}
+
+	/**
+	 * @return the number of Telecoms
+	 */
+	public int getNumTelecoms() {
+		return numTelecoms;
 	}
 
 	/**

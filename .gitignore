@@ -43,4 +43,4 @@ Temporary Items
 .apdisk
 *.class
 testoutput.txt
-tests/lognorm/~$timing.xlsx
+tests/lognorm/~$*.xlsx
