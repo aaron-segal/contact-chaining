@@ -95,6 +95,7 @@ public class Telecom {
 					return;
 				} else {
 					config.setProperty(MAX_THREADS, args[i+1]);
+					i++;
 				}
 			} else if (args[i].equals("-q")) {
 				quiet = true;
