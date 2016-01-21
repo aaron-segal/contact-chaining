@@ -81,11 +81,21 @@ public class TelecomData {
 	}
 
 	/**
+	 * Tests a user id to see if we should convert it from telecom to agency
+	 * ciphertext or whether it should be skipped. If it isn't skipped, it
+	 * gets added to alreadySent by this method. This is thread-safe.
 	 * @param userId The user id to ask about
 	 * @return True if we should skip this user in the last step, False if we should process it.
 	 */
 	public boolean skipUser(int userId) {
-		return !contacts.containsKey(userId) || alreadySent.contains(userId);
+		synchronized (contacts) {
+			if (contacts.containsKey(userId) && !alreadySent.contains(userId)) {
+				alreadySent.add(userId);
+				return false;
+			} else {
+				return true;
+			}
+		}
 	}
 
 	/**

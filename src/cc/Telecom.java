@@ -26,7 +26,7 @@ public class Telecom {
 
 	// Included for additional safety. Use the configurable
 	// MAX_THREADS instead.
-	public static final int MAX_THREADS_ALLOWED = 8;
+	public static final int MAX_THREADS_ALLOWED = 16;
 
 	public static final String PORT = "PORT";
 	public static final String INPUT_FILE = "INPUT";
