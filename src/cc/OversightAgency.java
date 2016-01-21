@@ -3,8 +3,11 @@ package cc;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class OversightAgency extends Agency {
 
@@ -79,14 +82,14 @@ public class OversightAgency extends Agency {
 			SignedTelecomCiphertext signedTC =
 					(SignedTelecomCiphertext) leaderIStream.readObject();
 			//There should be only one signature so far, with the leader's id
-			int leaderId = signedTC.signatures.keySet().iterator().next();
+			int leaderId = signedTC.getSignatures().keySet().iterator().next();
 			if (!keys.verify(leaderId, signedTC)) {
 				println("Failure: Investigating agency's signature (ID " + leaderId + ") does not verify!");
 				return;
 			}
 			println("Success, signature verified");
 
-			leaderOStream.writeObject(keys.sign(signedTC.telecomCiphertext));
+			leaderOStream.writeObject(keys.sign(signedTC.getCiphertext()));
 			leaderOStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -100,13 +103,17 @@ public class OversightAgency extends Agency {
 		// primary target.
 		int distance = maxDistance;
 
-		// Enter main loop. The queue will be empty at first, so this has to be a
-		// do-while loop.
+		// Enter main loop. We will continue until investigationQueue is empty, but
+		// this check has to be in the middle of the loop to mirror LeaderAgency.
 		try {
-			do {
+			while (true) {
 				boolean readOK = readResponseFromLeader(distance);
 				if (!readOK) {
 					return; // error text is processed in readResponseFromLeader.
+				}
+
+				if (investigationQueue.isEmpty()) {
+					break;
 				}
 
 				// Look at what the next query to the telecoms should be and give the
@@ -116,12 +123,49 @@ public class OversightAgency extends Agency {
 				distance = queueNext.distance;
 				leaderOStream.writeObject(keys.sign(queueNext.data));
 				leaderOStream.flush();
-			} while (!investigationQueue.isEmpty());
+			}
 
-			// Read final response from leader agency, and send back null to indicate
-			// that we got it.
-			readResponseFromLeader(distance);
-			leaderOStream.writeObject(null);
+			// We now have to send the leader a set of signatures on our final
+			// telecom ciphertexts all at once.
+			HashMap<Integer, byte[]> finalSignatures = new HashMap<Integer, byte[]>(); 
+			for (int telecomId : finalCiphertexts.keySet()) {
+				println("Signing request for " +
+						finalCiphertexts.get(telecomId).size() +
+						" leaf nodes to telecom " + telecomId);
+				TelecomCiphertext[] finalTCs =
+						new TelecomCiphertext[finalCiphertexts.get(telecomId).size()];
+				finalCiphertexts.get(telecomId).toArray(finalTCs);
+				finalSignatures.put(telecomId, keys.sign(finalTCs));
+			}
+			leaderOStream.writeObject(finalSignatures);
+			leaderOStream.flush();
+
+			// Finally, we read the final telecom responses and store them. We send
+			// the leader a True if everything is OK.
+			@SuppressWarnings("unchecked")
+			HashMap<Integer, SignedTelecomResponse> finalResponses = 
+			(HashMap<Integer, SignedTelecomResponse>) leaderIStream.readObject();
+			for (int telecomId : finalSignatures.keySet()) {
+				TelecomResponse finalTR = finalResponses.get(telecomId).getTelecomResponse(); 
+				byte[] finalSignature = finalResponses.get(telecomId).getSignature();
+				if (!keys.verify(telecomId, finalTR, finalSignature)) {
+					System.err.println("Failed to verify a signature on a response from "
+							+ telecomId);
+					// Have the courtesy to tell LeaderAgency it failed
+					leaderOStream.writeObject(false);
+					leaderOStream.flush();
+					return;
+				}
+				for (BigInteger[] agencyCiphertext : finalTR.getAgencyCiphertexts()) {
+					agencyCiphertexts.add(agencyCiphertext);
+				}
+				println("Got " +
+						finalTR.getAgencyCiphertexts().length +
+						" additional agency ciphertexts from telecom " + telecomId);
+			}
+			// If we got here, everything was OK!
+			leaderOStream.writeObject(true);
+			leaderOStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -142,14 +186,14 @@ public class OversightAgency extends Agency {
 		// Read, verify, and process the response of the previous telecom.
 		SignedTelecomResponse prevTR =
 				(SignedTelecomResponse) leaderIStream.readObject();
-		TelecomResponse telecomResponse = prevTR.telecomResponse;
-		if (!keys.verify(prevTR.telecomId, telecomResponse, prevTR.signature)) {
+		TelecomResponse telecomResponse = prevTR.getTelecomResponse();
+		if (!keys.verify(prevTR.getTelecomId(), telecomResponse, prevTR.getSignature())) {
 			// If we failed to verify the signature, complain bitterly and quit.
 			System.err.println("Failed to verify a signature on a response from "
-					+ prevTR.telecomId);
+					+ prevTR.getTelecomId());
 			return false;
 		}
-		if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
+		if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.SEARCH_DATA) {
 			agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
 			if (distance < 1) {
 				println(telecomResponse.getTelecomCiphertexts().length +
@@ -159,16 +203,26 @@ public class OversightAgency extends Agency {
 				// Ignore maximum degree restriction for the original target
 				println(telecomResponse.getTelecomCiphertexts().length +
 						" not added to queue; exceeds maximum degree");
+			} else if (distance == 1) {
+				// Add to final query sets, not investigation queue.
+				for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
+					if (!finalCiphertexts.containsKey(tc.getOwner())) {
+						finalCiphertexts.put(tc.getOwner(), new ArrayList<TelecomCiphertext>());
+					}
+					finalCiphertexts.get(tc.getOwner()).add(tc);
+				}
+				println(telecomResponse.getTelecomCiphertexts().length + 
+						" added to leaf set");
 			} else {
 				for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
 					investigationQueue.addLast(new QueueTCT(tc, distance - 1));
 				}
 				println(telecomResponse.getTelecomCiphertexts().length + 
 						" added to queue");
-				// Store degree of target for timing data
-				if (distance == maxDistance) {
-					targetDegree = telecomResponse.getTelecomCiphertexts().length;
-				}
+			}
+			// Store degree of target for timing data
+			if (distance == maxDistance) {
+				targetDegree = telecomResponse.getTelecomCiphertexts().length;
 			}
 		} else if (telecomResponse.getMsgType() == TelecomResponse.MsgType.ALREADY_SENT) {
 			println("MsgType: " + telecomResponse.getMsgType());

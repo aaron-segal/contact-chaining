@@ -17,17 +17,17 @@ import javax.crypto.IllegalBlockSizeException;
 public class TelecomKeys extends Keys {
 
 	private PrivateKey privateKey;
-	private Cipher decrypter;
+	private Cipher[] decrypters;
 	private HashMap<Integer, Cipher[]> multiEncrypters;
 
 	public TelecomKeys(String privateKeyFilename, String publicKeyFilename,
 			String keysPath, int id, int[] agencyIds, int numThreads) throws IOException {
 		super(privateKeyFilename, publicKeyFilename, keysPath, id, agencyIds);
-		loadPrivateKey(privateKeyFilename);
+		loadPrivateKey(privateKeyFilename, numThreads);
 		duplicateEncrypters(numThreads);
 	}
 
-	private void loadPrivateKey(String privateKeyFilename) throws IOException {
+	private void loadPrivateKey(String privateKeyFilename, int numThreads) throws IOException {
 		FileInputStream privateKeyInput = new FileInputStream(privateKeyFilename);
 		byte[] privateKeyBytes = new byte[1024];
 		int read = privateKeyInput.read(privateKeyBytes);
@@ -39,8 +39,11 @@ public class TelecomKeys extends Keys {
 		try {
 			KeyFactory keyFactory = KeyFactory.getInstance(CryptoKeyGen.ENCRYPTION_ALGORITHM);
 			privateKey = keyFactory.generatePrivate(privateKeySpec);
-			decrypter = Cipher.getInstance(CryptoKeyGen.ENCRYPTION_ALGORITHM + PADDING);
-			decrypter.init(Cipher.DECRYPT_MODE, privateKey);
+			decrypters = new Cipher[numThreads];
+			for (int i = 0; i < decrypters.length; i++) {
+				decrypters[i] = Cipher.getInstance(CryptoKeyGen.ENCRYPTION_ALGORITHM + PADDING);
+				decrypters[i].init(Cipher.DECRYPT_MODE, privateKey);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -72,7 +75,20 @@ public class TelecomKeys extends Keys {
 	 * @throws BadPaddingException
 	 */
 	public int decrypt(byte[] ciphertext) throws IllegalBlockSizeException, BadPaddingException {
-		byte[] byteData = decrypter.doFinal(ciphertext);
+		byte[] byteData = decrypters[0].doFinal(ciphertext);
+		return new BigInteger(byteData).intValue();
+	}
+	
+	/**
+	 * Decrypts a telecom ciphertext into an integer using a specific decrypter.
+	 * @param ciphertext The ciphertext to decrypt.
+	 * @param threadId The thread doing the encrypting.
+	 * @return The plaintext integer of this ciphertext.
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 */
+	public int decrypt(byte[] ciphertext, int threadId) throws IllegalBlockSizeException, BadPaddingException {
+		byte[] byteData = decrypters[threadId].doFinal(ciphertext);
 		return new BigInteger(byteData).intValue();
 	}
 

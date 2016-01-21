@@ -14,37 +14,54 @@ public class TelecomResponse implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum MsgType {
-		ERROR, DATA, NOT_FOUND, ALREADY_SENT, INVALID_SIGNATURE
+		ERROR, SEARCH_DATA, CONCLUDE_DATA, NOT_FOUND, ALREADY_SENT, INVALID_SIGNATURE
 	}
 
 	private MsgType msgType;
-	private BigInteger[] agencyCiphertext;
+	private BigInteger[][] agencyCiphertexts;
 	private TelecomCiphertext[] telecomCiphertexts;
 
 	public TelecomResponse(BigInteger[] agencyCiphertext, TelecomCiphertext[] telecomCiphertexts) {
-		this.agencyCiphertext = agencyCiphertext;
+		agencyCiphertexts = new BigInteger[1][];
+		agencyCiphertexts[0] = agencyCiphertext;
 		this.telecomCiphertexts = telecomCiphertexts;
-		setMsgType(MsgType.DATA);
+		setMsgType(MsgType.SEARCH_DATA);
+	}
+
+	public TelecomResponse(BigInteger[][] agencyCiphertexts) {
+		this.agencyCiphertexts = agencyCiphertexts;
+		telecomCiphertexts = null;
+		setMsgType(MsgType.CONCLUDE_DATA);
 	}
 
 	public TelecomResponse(MsgType msgType) {
-		agencyCiphertext = null;
+		agencyCiphertexts = null;
 		telecomCiphertexts = null;
 		this.setMsgType(msgType);
 	}
 
 	/**
+	 * To be used for SEARCH_DATA only. Throws RuntimeException else.
 	 * @return the agencyCiphertext
 	 */
 	public BigInteger[] getAgencyCiphertext() {
-		return agencyCiphertext;
+		if (msgType != MsgType.SEARCH_DATA) {
+			throw new RuntimeException("Called getAgencyCiphertext but MsgType was " +
+					msgType + "!");
+		}
+		return agencyCiphertexts[0];
 	}
 
 	/**
-	 * @param agencyCiphertext the agencyCiphertext to set
+	 * To be used for CONCLUDE_DATA only. Throws RuntimeException else.
+	 * @return the agencyCiphertexts
 	 */
-	public void setAgencyCiphertext(BigInteger[] agencyCiphertext) {
-		this.agencyCiphertext = agencyCiphertext;
+	public BigInteger[][] getAgencyCiphertexts() {
+		if (msgType != MsgType.CONCLUDE_DATA) {
+			throw new RuntimeException("Called getAgencyCiphertexts but MsgType was " +
+					msgType + "!");
+		}
+		return agencyCiphertexts;
 	}
 
 	/**

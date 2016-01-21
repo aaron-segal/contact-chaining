@@ -11,6 +11,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -53,6 +54,8 @@ public abstract class Agency {
 
 	protected ArrayDeque<QueueTCT> investigationQueue;
 	protected ArrayList<BigInteger[]> agencyCiphertexts;
+	protected HashMap<Integer, ArrayList<TelecomCiphertext>> finalCiphertexts;
+
 
 	protected class QueueTCT {
 		// The TelecomCiphertext to search for
@@ -189,6 +192,7 @@ public abstract class Agency {
 		targetId = Integer.parseInt(config.getProperty(TARGET_ID, "0"));
 		investigationQueue = new ArrayDeque<QueueTCT>();
 		agencyCiphertexts = new ArrayList<BigInteger[]>();
+		finalCiphertexts = new HashMap<Integer, ArrayList<TelecomCiphertext>>();
 	}
 
 	/**

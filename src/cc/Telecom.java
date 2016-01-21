@@ -6,6 +6,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import cc.SignedTelecomCiphertext.QueryType;
+
 public class Telecom {
 
 	//if the -q flag is passed, nothing will be output except at the very end
@@ -150,7 +152,7 @@ public class Telecom {
 
 	private void sendResponse(TelecomResponse response) throws IOException {
 		SignedTelecomResponse signedTR = new SignedTelecomResponse(response, id);
-		signedTR.signature = keys.sign(response);
+		signedTR.setSignature(keys.sign(response));
 		outputStream.writeObject(signedTR);
 		outputStream.flush();
 	}
@@ -158,8 +160,7 @@ public class Telecom {
 	// Waits for a connection, then responds to requests over that connection.
 	// Does this forever.
 	public void serveRequests() {
-		// This while loop makes sure that the agency can try again if the
-		// connection breaks somehow.
+		// This while loop lets the telecom run continuously, across multiple protocol runs.
 		while (true) {
 			try {
 				agencySocket = listenSocket.accept();
@@ -181,13 +182,19 @@ public class Telecom {
 						sendResponse(new TelecomResponse(TelecomResponse.MsgType.INVALID_SIGNATURE));
 						return;
 					}
-					// Update maxDegree if we don't already know it
-					if (data.getMaxDegree() == Integer.MAX_VALUE && signedTC.maxDegree > 0) {
-						data.setMaxDegree(signedTC.maxDegree);
+					TelecomResponse response;
+					if (signedTC.getType() == QueryType.SEARCH) {
+						// Update maxDegree if we don't already know it
+						if (data.getMaxDegree() == Integer.MAX_VALUE && signedTC.getMaxDegree() > 0) {
+							data.setMaxDegree(signedTC.getMaxDegree());
+						}
+						int queryId =
+								keys.decrypt(signedTC.getCiphertext().getEncryptedId());
+						response = data.searchQueryResponse(queryId);
+					} else {
+						// Handle final requests differently.
+						response = data.concludeQueryResponse(signedTC.getCiphertexts());
 					}
-					int queryId =
-							keys.decrypt(signedTC.telecomCiphertext.getEncryptedId());
-					TelecomResponse response = data.queryResponse(queryId, signedTC.distance);
 					sendResponse(response);
 				}
 			} catch (IOException e) {

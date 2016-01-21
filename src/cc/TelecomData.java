@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -36,9 +37,10 @@ public class TelecomData {
 	// Keys used for crypto operations.
 	private TelecomKeys keys;
 
-	// currentPlaintext and currentCiphertext are accessed by encryption threads
+	// current* are accessed by encryption threads
 	public int[] currentPlaintexts;
 	public TelecomCiphertext[] currentCiphertexts;
+	public BigInteger[][] currentAgencyCiphertexts;
 
 	// We won't consider starting a new thread for encryption unless we can give it
 	// this many items to work on.
@@ -78,14 +80,26 @@ public class TelecomData {
 		this.maxDegree = Integer.MAX_VALUE;
 	}
 
-	public TelecomResponse queryResponse(int userId, int distance) {
+	/**
+	 * @param userId The user id to ask about
+	 * @return True if we should skip this user in the last step, False if we should process it.
+	 */
+	public boolean skipUser(int userId) {
+		return !contacts.containsKey(userId) || alreadySent.contains(userId);
+	}
+
+	/**
+	 * Computers a response to a query about the neighbors of a single user.
+	 * @param userId The user being queried.
+	 * @return The (unsigned) response we should send the queryin agency.
+	 */
+	public TelecomResponse searchQueryResponse(int userId) {
 		// Check if userId is valid
 		if (!contacts.containsKey(userId)) {
 			return new TelecomResponse(MsgType.NOT_FOUND);
 		} else if (alreadySent.contains(userId)) {
 			return new TelecomResponse(MsgType.ALREADY_SENT);
 		}
-
 
 		// Compute agency ciphertext
 		BigInteger[] agencyCiphertext = {BigInteger.valueOf(userId)};
@@ -98,7 +112,7 @@ public class TelecomData {
 		// Compute set of neighbors unless distance == 0
 		currentPlaintexts = contacts.get(userId);
 		currentCiphertexts = new TelecomCiphertext[currentPlaintexts.length];
-		if (distance > 0 && currentPlaintexts.length <= maxDegree) {
+		if (currentPlaintexts.length <= maxDegree) {
 			int threads = currentPlaintexts.length / MIN_ITEMS_PER_THREAD;
 			threads = Math.max(threads, 1);
 			threads = Math.min(threads, maxThreads);
@@ -107,7 +121,8 @@ public class TelecomData {
 			// Do encryption in threads
 			EncryptWorker[] workers = new EncryptWorker[threads];
 			for (int i = 0; i < workers.length; i++) {
-				workers[i] = new EncryptWorker(this, itemsPerThread * i, itemsPerThread, keys, i);
+				workers[i] = new EncryptWorker(this, itemsPerThread * i,
+						itemsPerThread, keys, i);
 				workers[i].start();
 			}
 			for (int i = 0; i < workers.length; i++) {
@@ -121,6 +136,38 @@ public class TelecomData {
 		// Mark that we have sent this userId.
 		alreadySent.add(userId);
 		return new TelecomResponse(agencyCiphertext, currentCiphertexts);
+	}
+
+	public TelecomResponse concludeQueryResponse(TelecomCiphertext[] telecomCiphertexts) {
+		currentCiphertexts = telecomCiphertexts;
+		currentAgencyCiphertexts = new BigInteger[currentCiphertexts.length][];
+		int threads = currentCiphertexts.length / MIN_ITEMS_PER_THREAD;
+		threads = Math.max(threads, 1);
+		threads = Math.min(threads, maxThreads);
+		int itemsPerThread = (currentCiphertexts.length + threads - 1) / threads;
+		// Convert from TelecomCiphertext to AgencyCiphertext in threads
+		ConvertWorker[] workers = new ConvertWorker[threads];
+		for (int i = 0; i < workers.length; i++) {
+			workers[i] = new ConvertWorker(this, itemsPerThread * i,
+					itemsPerThread, keys, i);
+			workers[i].start();
+		}
+		for (int i = 0; i < workers.length; i++) {
+			try {
+				workers[i].join();
+			} catch (InterruptedException e) {
+			}
+		}
+		// Condense currentAgencyCiphertexts by removing null ciphertexts.
+		// The resulting valid array has length = copy.
+		int copy = 0;
+		for (int scan = 0; scan < currentAgencyCiphertexts.length; scan++) {
+			if (currentAgencyCiphertexts[scan] != null) {
+				currentAgencyCiphertexts[copy] = currentAgencyCiphertexts[scan];
+				copy++;
+			}
+		}
+		return new TelecomResponse(Arrays.copyOf(currentAgencyCiphertexts, copy));
 	}
 
 	/**

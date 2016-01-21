@@ -241,6 +241,25 @@ public abstract class Keys {
 	}
 
 	/**
+	 * Uses our keys to sign a telecom ciphertext.
+	 * @param ciphertext The telecom ciphertext to sign.
+	 * @return This party's signature on the ciphertext.
+	 */
+	public byte[] sign(TelecomCiphertext[] ciphertexts) {
+		try {
+			byte[] cipherBytes = Serializer.serialize(ciphertexts);
+			signer.update(cipherBytes);
+			return signer.sign();
+		} catch (IOException e) {
+			System.err.println("Malformed TelecomCiphertext");
+			e.printStackTrace();
+		} catch (SignatureException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
 	 * Uses our keys to sign a telecom response.
 	 * @param response The telecom response to sign.
 	 * @return This party's signature on the response.
@@ -267,12 +286,16 @@ public abstract class Keys {
 	 */
 	public boolean verify(int id, SignedTelecomCiphertext signedTC) {
 		Signature verifier = verifiers.get(id);
-		byte[] signature = signedTC.signatures.get(id);
+		byte[] signature = signedTC.getSignatures().get(id);
 		if (signature == null) {
 			return false;
 		}
 		try {
-			verifier.update(Serializer.serialize(signedTC.telecomCiphertext));
+			if (signedTC.getType() == SignedTelecomCiphertext.QueryType.SEARCH) {
+				verifier.update(Serializer.serialize(signedTC.getCiphertext()));
+			} else {
+				verifier.update(Serializer.serialize(signedTC.getCiphertexts()));
+			}
 			return verifier.verify(signature);
 		} catch (SignatureException e) {
 			e.printStackTrace();

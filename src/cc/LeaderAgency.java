@@ -4,9 +4,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -82,11 +84,10 @@ public class LeaderAgency extends Agency {
 		int initialOwner = DataGen.provider(targetId, numTelecoms);
 		byte[] initialTCT = keys.encrypt(initialOwner, targetId);
 		TelecomCiphertext startTCT = new TelecomCiphertext(initialTCT, initialOwner);
-		investigationQueue.addLast(new QueueTCT(startTCT, maxDistance));
 
 		// Search on the first telecom ciphertext. It is different from the others
 		// because it does not have a telecom signature.
-		QueueTCT queueNext = investigationQueue.pop();
+		QueueTCT queueNext = new QueueTCT(startTCT, maxDistance);
 		println("Remaining in queue: " + investigationQueue.size());
 		TelecomCiphertext nextTC = queueNext.data;
 		SignedTelecomCiphertext nextSignedTC = new SignedTelecomCiphertext(nextTC);
@@ -115,25 +116,27 @@ public class LeaderAgency extends Agency {
 		try {
 			ObjectOutputStream oos = telecoms.get(initialOwner).outputStream;
 			ObjectInputStream ois = telecoms.get(initialOwner).inputStream;
-			nextSignedTC.distance = maxDistance;
 			oos.writeObject(nextSignedTC);
 			oos.flush();
 			prevResponse = (SignedTelecomResponse) ois.readObject();
-			TelecomResponse telecomResponse = prevResponse.telecomResponse;
-			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
+			TelecomResponse telecomResponse = prevResponse.getTelecomResponse();
+			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.SEARCH_DATA) {
 				agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
 				if (maxDistance > 0) {
-					for (TelecomCiphertext tc : prevResponse.telecomResponse.getTelecomCiphertexts()) {
+					for (TelecomCiphertext tc :
+						prevResponse.getTelecomResponse().getTelecomCiphertexts()) {
 						investigationQueue.addLast(new QueueTCT(tc, maxDistance - 1));
 					}
-					println(prevResponse.telecomResponse.getTelecomCiphertexts().length + 
-							" added to queue");
+					println(prevResponse.getTelecomResponse().
+							getTelecomCiphertexts().length + " added to queue");
 				}
 				// Store degree of target for timing data
-				targetDegree = prevResponse.telecomResponse.getTelecomCiphertexts().length;
+				targetDegree = prevResponse.getTelecomResponse().
+						getTelecomCiphertexts().length;
 			} else {
 				//println("MsgType: " + signedTR.telecomResponse.getMsgType());
-				System.err.println("Cannot continue; got initial MsgType " + prevResponse.telecomResponse.getMsgType());
+				System.err.println("Cannot continue; got initial MsgType " +
+						prevResponse.getTelecomResponse().getMsgType());
 				return;
 			}
 		} catch (IOException e) {
@@ -149,9 +152,12 @@ public class LeaderAgency extends Agency {
 		// It is already in the list of known telecoms so we won't do this otherwise.
 		boolean needToInformInitialOwner = true;
 
+		// Setup containers for final queries.
+		finalCiphertexts.put(initialOwner, new ArrayList<TelecomCiphertext>());
+
 		// We have the first responses we need to start investigating the graph.
-		// We are ready to enter the main loop proper
-		while (!investigationQueue.isEmpty()) {
+		// We are ready to enter the main loop.
+		while (!investigationQueue.isEmpty() && investigationQueue.peek().distance > 0) {
 			queueNext = investigationQueue.pop();
 			println("Remaining in queue: " + investigationQueue.size());
 			nextTC = queueNext.data;
@@ -178,20 +184,19 @@ public class LeaderAgency extends Agency {
 			println("Sending signed request to telecom " + nextOwner + "...");
 			if (!telecoms.containsKey(nextOwner)) {
 				connectTelecom(nextOwner);
-				nextSignedTC.maxDegree = maxDegree;
+				nextSignedTC.setMaxDegree(maxDegree);
 			} else if (needToInformInitialOwner && nextOwner == initialOwner) {
-				nextSignedTC.maxDegree = maxDegree;
+				nextSignedTC.setMaxDegree(maxDegree);
 				needToInformInitialOwner = false;
 			}
 			try {
 				ObjectOutputStream oos = telecoms.get(nextOwner).outputStream;
 				ObjectInputStream ois = telecoms.get(nextOwner).inputStream;
-				nextSignedTC.distance = queueNext.distance;
 				oos.writeObject(nextSignedTC);
 				oos.flush();
 				prevResponse = (SignedTelecomResponse) ois.readObject();
-				TelecomResponse telecomResponse = prevResponse.telecomResponse;
-				if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
+				TelecomResponse telecomResponse = prevResponse.getTelecomResponse();
+				if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.SEARCH_DATA) {
 					agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
 					if (queueNext.distance < 1 && telecomResponse.getTelecomCiphertexts().length > 0) {
 						println(telecomResponse.getTelecomCiphertexts().length +
@@ -201,6 +206,16 @@ public class LeaderAgency extends Agency {
 					} else if (telecomResponse.getTelecomCiphertexts().length > maxDegree){
 						println(telecomResponse.getTelecomCiphertexts().length +
 								" not added to queue; exceeds maximum degree");
+					} else if (queueNext.distance == 1) {
+						// Add to final query sets, not investigation queue.
+						for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
+							if (!finalCiphertexts.containsKey(tc.getOwner())) {
+								finalCiphertexts.put(tc.getOwner(), new ArrayList<TelecomCiphertext>());
+							}
+							finalCiphertexts.get(tc.getOwner()).add(tc);
+						}
+						println(telecomResponse.getTelecomCiphertexts().length + 
+								" added to leaf set");
 					} else {
 						for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
 							investigationQueue.addLast(new QueueTCT(tc, queueNext.distance - 1));
@@ -224,16 +239,94 @@ public class LeaderAgency extends Agency {
 			}
 		}
 
-		// Finally, send the very last telecomResponse to our oversight agencies.
-		OversightSearchThread[] searchThreads = new OversightSearchThread[oversight.length];
-		for (int i = 0; i < searchThreads.length; i++) {
-			searchThreads[i] = new OversightSearchThread(oversight[i], prevResponse);
-			searchThreads[i].start();
+		// From here on, we won't add anything new to the queue. We only care about
+		// agency ciphertexts. So, we'll bundle all our requests together to save
+		// on signatures.
+		HashMap<Integer, SignedTelecomCiphertext> finalQueries =
+				new HashMap<Integer, SignedTelecomCiphertext>(); 
+		for (int telecomId : finalCiphertexts.keySet()) {
+			TelecomCiphertext[] finalTCs =
+					new TelecomCiphertext[finalCiphertexts.get(telecomId).size()];
+			finalCiphertexts.get(telecomId).toArray(finalTCs);
+			finalQueries.put(telecomId, new SignedTelecomCiphertext(finalTCs));
+			finalQueries.get(telecomId).addSignature(id, keys.sign(finalTCs));
 		}
-		for (OversightSearchThread ost : searchThreads) {
+
+		OversightConcludeThread[] concludeThreads =
+				new OversightConcludeThread[oversight.length];
+		for (int i = 0; i < concludeThreads.length; i++) {
+			concludeThreads[i] = new OversightConcludeThread(oversight[i], prevResponse);
+			concludeThreads[i].start();
+		}
+		for (OversightConcludeThread oct : concludeThreads) {
 			try {
-				ost.join();
+				oct.join();
 			} catch (InterruptedException e) {
+			} finally {
+				for (int telecomId : finalQueries.keySet()) {
+					finalQueries.get(telecomId).addSignature(
+							oct.getAgencyId(), oct.getSignature(telecomId));
+				}
+			}
+		}
+		for (int telecomId : finalQueries.keySet()) {
+			println("Sending request for " +
+					finalCiphertexts.get(telecomId).size() +
+					" leaf nodes to telecom " + telecomId);
+			if (!telecoms.containsKey(telecomId)) {
+				connectTelecom(telecomId);
+			}
+			try {
+				// This time, write all objects to telecoms before reading them
+				ObjectOutputStream oos = telecoms.get(telecomId).outputStream;
+				oos.writeObject(finalQueries.get(telecomId));
+				oos.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		HashMap<Integer, SignedTelecomResponse> finalResponses =
+				new HashMap<Integer, SignedTelecomResponse>();
+
+		for (int telecomId : finalQueries.keySet()) {
+			try {
+				ObjectInputStream ois = telecoms.get(telecomId).inputStream;
+				SignedTelecomResponse finalSTR =
+						(SignedTelecomResponse) ois.readObject();
+				finalResponses.put(telecomId, finalSTR);
+				for (BigInteger[] agencyCiphertext :
+					finalSTR.getTelecomResponse().getAgencyCiphertexts()) {
+					agencyCiphertexts.add(agencyCiphertext);
+				}
+				println("Got " +
+						finalSTR.getTelecomResponse().getAgencyCiphertexts().length +
+						" additional agency ciphertexts from telecom " + telecomId);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+
+		// Finally, send the very last telecomResponses to our oversight agencies.
+		OversightFinalResultsThread[] finalThreads =
+				new OversightFinalResultsThread[oversight.length];
+		for (int i = 0; i < finalThreads.length; i++) {
+			finalThreads[i] = new OversightFinalResultsThread(oversight[i], finalResponses);
+			finalThreads[i].start();
+		}
+		for (OversightFinalResultsThread ofrt : finalThreads) {
+			try {
+				ofrt.join();
+			} catch (InterruptedException e) {
+			} finally {
+				if (!ofrt.concludeOK()) {
+					System.err.println("Didn't get an OK from oversight agency " +
+							ofrt.getAgencyId() + "!");
+				}
 			}
 		}
 	}
