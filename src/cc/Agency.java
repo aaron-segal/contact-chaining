@@ -73,7 +73,7 @@ public abstract class Agency {
 
 
 	protected void usage() {
-		System.err.println("Usage: java cc.Agency config_file [-c config_file] [-d max_degree] [-l max_length] [-k private_key_file] [-o output_path] [-q] [-s]");
+		System.err.println("Usage: java cc.Agency config_file [-c config_file] [-d max_degree] [-i id_of_target] [-l max_length] [-k private_key_file] [-o output_path] [-q] [-s]");
 	}
 
 	public Agency(String[] args) {
@@ -139,6 +139,14 @@ public abstract class Agency {
 					return;
 				} else {
 					config.setProperty(OUTPUT_PATH, args[i+1]);
+					i++;
+				}
+			} else if (args[i].equals("-i")) {
+				if (args.length == i+1) {
+					usage();
+					return;
+				} else {
+					config.setProperty(TARGET_ID, args[i+1]);
 					i++;
 				}
 			} else if (args[i].equals("-q")) {

@@ -27,7 +27,7 @@ public class LeaderAgency extends Agency {
 
 	@Override
 	protected void usage() {
-		System.err.println("Usage: java cc.LeaderAgency config_file [-c config_file] [-d max_degree] [-l max_length] [-k private_key_file] [-q] [-s]");
+		System.err.println("Usage: java cc.LeaderAgency config_file [-c config_file] [-d max_degree] [-i id_of_target] [-l max_length] [-k private_key_file] [-o output_path] [-q] [-s]");
 	}
 
 	public LeaderAgency(String[] args) {
