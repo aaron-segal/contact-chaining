@@ -23,7 +23,8 @@ public class SignedTelecomCiphertext implements Serializable {
 	private QueryType type;
 	private TelecomCiphertext[] telecomCiphertexts;
 	private HashMap<Integer, byte[]> signatures;
-	private int maxDegree = 0; // The maximum degree of users that agencies care about. Ignored if 0.
+	// The maximum degree of users that agencies care about. Ignored if 0.
+	private int maxDegree = 0;
 
 	public SignedTelecomCiphertext(TelecomCiphertext telecomCiphertext) {
 		telecomCiphertexts = new TelecomCiphertext[1];
@@ -35,7 +36,11 @@ public class SignedTelecomCiphertext implements Serializable {
 	public SignedTelecomCiphertext(TelecomCiphertext[] telecomCiphertexts) {
 		this.telecomCiphertexts = telecomCiphertexts;
 		signatures = new HashMap<Integer, byte[]>();
-		type = QueryType.CONCLUDE;
+		type = QueryType.SEARCH;
+	}
+
+	public void setType(QueryType type) {
+		this.type = type;
 	}
 
 	public QueryType getType() {
@@ -43,24 +48,9 @@ public class SignedTelecomCiphertext implements Serializable {
 	}
 
 	/**
-	 * To be used for SEARCH messages only.
-	 * @return The telecom ciphertext
-	 */
-	public TelecomCiphertext getCiphertext() {
-		if (type != QueryType.SEARCH) {
-			throw new RuntimeException("Tried to use getCiphertext on a CONCLUDE query!");
-		}
-		return telecomCiphertexts[0];
-	}
-
-	/**
-	 * To be used for CONCLUDE messages only.
 	 * @return All telecom ciphertexts.
 	 */
 	public TelecomCiphertext[] getCiphertexts() {
-		if (type != QueryType.CONCLUDE) {
-			throw new RuntimeException("Tried to use getCiphertext on a CONCLUDE query!");
-		}
 		return telecomCiphertexts;
 	}
 
@@ -76,7 +66,7 @@ public class SignedTelecomCiphertext implements Serializable {
 
 	/**
 	 * 
-	 * @return All signatures on the ciphertext(s).
+	 * @return All signatures on the ciphertexts.
 	 */
 	public HashMap<Integer, byte[]> getSignatures() {
 		return signatures;

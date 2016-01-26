@@ -44,6 +44,12 @@ public class OversightSocket {
 		return agencyId;
 	}
 
+	public void writeObject(Object o) throws IOException {
+		outputStream.writeObject(o);
+		outputStream.flush();
+		outputStream.reset();
+	}
+
 	/**
 	 * @param agencyId the agencyId to set
 	 */

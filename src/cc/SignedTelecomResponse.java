@@ -3,26 +3,33 @@ package cc;
 import java.io.Serializable;
 
 /**
- * Wrapper around a TelecomResponse which includes a signature on the enclosed data.
+ * Wrapper around a set of TelecomResponses which includes a signature on the
+ * enclosed data.
  * @author Aaron Segal
  */
 public class SignedTelecomResponse implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private TelecomResponse telecomResponse;
+	private TelecomResponse[] telecomResponses;
 	private int telecomId;
 	private byte[] signature;
 
 	public SignedTelecomResponse(TelecomResponse telecomResponse, int telecomId) {
-		this.telecomResponse = telecomResponse;
+		telecomResponses = new TelecomResponse[1];
+		telecomResponses[0] = telecomResponse;
+		this.telecomId = telecomId;
+	}
+	
+	public SignedTelecomResponse(TelecomResponse[] telecomResponses, int telecomId) {
+		this.telecomResponses = telecomResponses;
 		this.telecomId = telecomId;
 	}
 
 	/**
-	 * @return the telecomResponse
+	 * @return the telecomResponses
 	 */
-	public TelecomResponse getTelecomResponse() {
-		return telecomResponse;
+	public TelecomResponse[] getTelecomResponses() {
+		return telecomResponses;
 	}
 
 	/**

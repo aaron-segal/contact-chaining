@@ -1,12 +1,14 @@
 package cc;
 
-import java.security.GeneralSecurityException;
-import java.util.*;
-import java.io.*; 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Properties;
 
-import cc.SignedTelecomCiphertext.QueryType;
+import cc.TelecomResponse.MsgType;
 
 public class Telecom {
 
@@ -150,9 +152,17 @@ public class Telecom {
 		}
 	}
 
-	private void sendResponse(TelecomResponse response) throws IOException {
-		SignedTelecomResponse signedTR = new SignedTelecomResponse(response, id);
-		signedTR.setSignature(keys.sign(response));
+	private void sendResponse(MsgType type) throws IOException {
+		TelecomResponse tR = new TelecomResponse(type);
+		SignedTelecomResponse signedTR = new SignedTelecomResponse(tR, id);
+		signedTR.setSignature(keys.sign(signedTR.getTelecomResponses()));
+		outputStream.writeObject(signedTR);
+		outputStream.flush();
+	}
+
+	private void sendResponse(TelecomResponse[] responses) throws IOException {
+		SignedTelecomResponse signedTR = new SignedTelecomResponse(responses, id);
+		signedTR.setSignature(keys.sign(responses));
 		outputStream.writeObject(signedTR);
 		outputStream.flush();
 	}
@@ -160,16 +170,20 @@ public class Telecom {
 	// Waits for a connection, then responds to requests over that connection.
 	// Does this forever.
 	public void serveRequests() {
-		// This while loop lets the telecom run continuously, across multiple protocol runs.
+		// This while loop lets the telecom run continuously as a server,
+		// across multiple executions of protocol.
 		while (true) {
 			try {
 				agencySocket = listenSocket.accept();
-				println("Got a connection from agency at " + agencySocket.getInetAddress().toString());
+				println("Got a connection from agency at " +
+						agencySocket.getInetAddress().toString());
 				outputStream = new ObjectOutputStream(agencySocket.getOutputStream());
 				inputStream = new ObjectInputStream(agencySocket.getInputStream());
 				data.resetSent();
 				// This while loop makes sure that we continuously respond to
-				// queries over our open connection.
+				// queries over our open connection. We don't need a separate
+				// thread for this, because we only ever expect to have one
+				// connection at a time.
 				while (true) {
 					SignedTelecomCiphertext signedTC =
 							(SignedTelecomCiphertext) inputStream.readObject();
@@ -179,30 +193,21 @@ public class Telecom {
 						signaturesVerify &= keys.verify(agencyId, signedTC);
 					}
 					if (!signaturesVerify) {
-						sendResponse(new TelecomResponse(TelecomResponse.MsgType.INVALID_SIGNATURE));
+						sendResponse(MsgType.INVALID_SIGNATURE);
 						return;
 					}
-					TelecomResponse response;
-					if (signedTC.getType() == QueryType.SEARCH) {
-						// Update maxDegree if we don't already know it
-						if (data.getMaxDegree() == Integer.MAX_VALUE && signedTC.getMaxDegree() > 0) {
-							data.setMaxDegree(signedTC.getMaxDegree());
-						}
-						int queryId =
-								keys.decrypt(signedTC.getCiphertext().getEncryptedId());
-						response = data.searchQueryResponse(queryId);
-					} else {
-						// Handle final requests differently.
-						response = data.concludeQueryResponse(signedTC.getCiphertexts());
+
+					// Update maxDegree if we don't already know it
+					if (data.getMaxDegree() == Integer.MAX_VALUE &&
+							signedTC.getMaxDegree() > 0) {
+						data.setMaxDegree(signedTC.getMaxDegree());
 					}
-					sendResponse(response);
+					sendResponse(data.queryResponse(signedTC.getCiphertexts(),
+							signedTC.getType()));
 				}
 			} catch (IOException e) {
 				System.err.println("Connection lost. Waiting for new connection");
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				return;
-			} catch (GeneralSecurityException e) {
 				e.printStackTrace();
 				return;
 			}

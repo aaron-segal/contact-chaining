@@ -3,11 +3,10 @@ package cc;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import cc.SignedTelecomCiphertext.QueryType;
 import cc.TelecomResponse.MsgType;
 
 /**
@@ -38,13 +37,12 @@ public class TelecomData {
 	private TelecomKeys keys;
 
 	// current* are accessed by encryption threads
-	public int[] currentPlaintexts;
 	public TelecomCiphertext[] currentCiphertexts;
-	public BigInteger[][] currentAgencyCiphertexts;
+	public TelecomResponse[] currentResponses;
 
-	// We won't consider starting a new thread for encryption unless we can give it
+	// We won't consider starting a new thread for responding unless we can give it
 	// this many items to work on.
-	public static final int MIN_ITEMS_PER_THREAD = 10;
+	public static final int MIN_ITEMS_PER_THREAD = 5;
 
 	@SuppressWarnings("unchecked")
 	public TelecomData(String filename, int numTelecoms, TelecomKeys keys, int maxThreads) {
@@ -81,76 +79,31 @@ public class TelecomData {
 	}
 
 	/**
-	 * Tests a user id to see if we should convert it from telecom to agency
-	 * ciphertext or whether it should be skipped. If it isn't skipped, it
-	 * gets added to alreadySent by this method. This is thread-safe.
+	 * Tests a user id to see what type of response it should get. That is, it
+	 * checks to make sure we have this user in our database, and that it hasn't
+	 * already been sent to the agencies. If that is the case, the id gets added to
+	 * alreadySent by this method. This is thread-safe.
 	 * @param userId The user id to ask about
-	 * @return True if we should skip this user in the last step, False if we should process it.
+	 * @return The type of response we should be sending.
 	 */
-	public boolean skipUser(int userId) {
-		synchronized (contacts) {
-			if (contacts.containsKey(userId) && !alreadySent.contains(userId)) {
-				alreadySent.add(userId);
-				return false;
-			} else {
-				return true;
-			}
-		}
-	}
-
-	/**
-	 * Computers a response to a query about the neighbors of a single user.
-	 * @param userId The user being queried.
-	 * @return The (unsigned) response we should send the queryin agency.
-	 */
-	public TelecomResponse searchQueryResponse(int userId) {
-		// Check if userId is valid
+	public MsgType chooseResponseType(int userId) {
 		if (!contacts.containsKey(userId)) {
-			return new TelecomResponse(MsgType.NOT_FOUND);
-		} else if (alreadySent.contains(userId)) {
-			return new TelecomResponse(MsgType.ALREADY_SENT);
+			return MsgType.NOT_FOUND;
 		}
-
-		// Compute agency ciphertext
-		BigInteger[] agencyCiphertext = {BigInteger.valueOf(userId)};
-		CommutativeElGamal commEncrypter = new CommutativeElGamal();
-		for (int agencyId : keys.getAgencyIds()) {
-			agencyCiphertext = commEncrypter.encrypt(agencyId,
-					keys.getAgencyPublicKey(agencyId), agencyCiphertext);
-		}
-
-		// Compute set of neighbors unless distance == 0
-		currentPlaintexts = contacts.get(userId);
-		currentCiphertexts = new TelecomCiphertext[currentPlaintexts.length];
-		if (currentPlaintexts.length <= maxDegree) {
-			int threads = currentPlaintexts.length / MIN_ITEMS_PER_THREAD;
-			threads = Math.max(threads, 1);
-			threads = Math.min(threads, maxThreads);
-			int itemsPerThread = (currentPlaintexts.length + threads - 1) / threads;
-
-			// Do encryption in threads
-			EncryptWorker[] workers = new EncryptWorker[threads];
-			for (int i = 0; i < workers.length; i++) {
-				workers[i] = new EncryptWorker(this, itemsPerThread * i,
-						itemsPerThread, keys, i);
-				workers[i].start();
-			}
-			for (int i = 0; i < workers.length; i++) {
-				try {
-					workers[i].join();
-				} catch (InterruptedException e) {
-				}
+		synchronized (alreadySent) {
+			if (alreadySent.contains(userId)) {
+				return MsgType.ALREADY_SENT;
+			} else {
+				alreadySent.add(userId);
+				return MsgType.DATA;
 			}
 		}
-
-		// Mark that we have sent this userId.
-		alreadySent.add(userId);
-		return new TelecomResponse(agencyCiphertext, currentCiphertexts);
 	}
 
-	public TelecomResponse concludeQueryResponse(TelecomCiphertext[] telecomCiphertexts) {
+	public TelecomResponse[] queryResponse(TelecomCiphertext[] telecomCiphertexts,
+			QueryType type) {
 		currentCiphertexts = telecomCiphertexts;
-		currentAgencyCiphertexts = new BigInteger[currentCiphertexts.length][];
+		currentResponses = new TelecomResponse[currentCiphertexts.length];
 		int threads = currentCiphertexts.length / MIN_ITEMS_PER_THREAD;
 		threads = Math.max(threads, 1);
 		threads = Math.min(threads, maxThreads);
@@ -159,7 +112,7 @@ public class TelecomData {
 		ConvertWorker[] workers = new ConvertWorker[threads];
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new ConvertWorker(this, itemsPerThread * i,
-					itemsPerThread, keys, i);
+					itemsPerThread, keys, type, i);
 			workers[i].start();
 		}
 		for (int i = 0; i < workers.length; i++) {
@@ -168,16 +121,17 @@ public class TelecomData {
 			} catch (InterruptedException e) {
 			}
 		}
-		// Condense currentAgencyCiphertexts by removing null ciphertexts.
-		// The resulting valid array has length = copy.
-		int copy = 0;
-		for (int scan = 0; scan < currentAgencyCiphertexts.length; scan++) {
-			if (currentAgencyCiphertexts[scan] != null) {
-				currentAgencyCiphertexts[copy] = currentAgencyCiphertexts[scan];
-				copy++;
-			}
-		}
-		return new TelecomResponse(Arrays.copyOf(currentAgencyCiphertexts, copy));
+		// At this point, we are done.
+		return currentResponses;
+	}
+
+	/**
+	 * Gets the immediate neighbors of a given user.
+	 * @param userId The user being requested
+	 * @return An array of that user's neighbors.
+	 */
+	public int[] getNeighbors(int userId) {
+		return contacts.get(userId);
 	}
 
 	/**

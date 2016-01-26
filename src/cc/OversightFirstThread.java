@@ -24,8 +24,7 @@ public class OversightFirstThread extends Thread {
 			oSocket.open = true;
 
 			// Send the signed telecom ciphertext to the oversight agency
-			oSocket.outputStream.writeObject(stc);
-			oSocket.outputStream.flush();
+			oSocket.writeObject(stc);
 
 			// Read the new signature back
 			signature = (byte[]) oSocket.inputStream.readObject();

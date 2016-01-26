@@ -7,12 +7,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
+
+import cc.TelecomResponse.MsgType;
 
 /**
  * Represents an oversight agency. Its job is to check everything the investigating agency
@@ -52,24 +53,8 @@ public abstract class Agency {
 	public static final int MAX_TRIES = 10;
 	public static final long SLEEP_BETWEEN_TRIES = 1000;
 
-	protected ArrayDeque<QueueTCT> investigationQueue;
 	protected ArrayList<BigInteger[]> agencyCiphertexts;
-	protected HashMap<Integer, ArrayList<TelecomCiphertext>> finalCiphertexts;
-
-
-	protected class QueueTCT {
-		// The TelecomCiphertext to search for
-		public TelecomCiphertext data;
-		// The distance out from here we are willing to search
-		public int distance;
-		public QueueTCT() {}
-		public QueueTCT(TelecomCiphertext data, int distance) {
-			this.data = data;
-			this.distance = distance;
-		}
-	}
-
-
+	protected HashMap<Integer, ArrayList<TelecomCiphertext>> investigationLists;
 
 
 	protected void usage() {
@@ -198,9 +183,73 @@ public abstract class Agency {
 			return;
 		}
 		targetId = Integer.parseInt(config.getProperty(TARGET_ID, "0"));
-		investigationQueue = new ArrayDeque<QueueTCT>();
 		agencyCiphertexts = new ArrayList<BigInteger[]>();
-		finalCiphertexts = new HashMap<Integer, ArrayList<TelecomCiphertext>>();
+		investigationLists = new HashMap<Integer, ArrayList<TelecomCiphertext>>();
+	}
+
+
+	/**
+	 * Adds the specified telecomCiphertext to the list, marking that we will
+	 * send this as a request to the telecoms. 
+	 * @param telecomCiphertext the TelecomCiphertext to add.
+	 */
+	private void addTelecomCiphertext(TelecomCiphertext telecomCiphertext) {
+		int owner = telecomCiphertext.getOwner();
+		if (!investigationLists.containsKey(owner)) {
+			investigationLists.put(owner, new ArrayList<TelecomCiphertext>());
+		}
+		investigationLists.get(owner).add(telecomCiphertext);
+	}
+
+	/**
+	 * Returns, in array form, all known telecom ciphertexts for a given telecom.
+	 * @param owner The telecom we want ciphertexts for
+	 * @return An array of TelecomCiphertexts for that telecom
+	 */
+	protected TelecomCiphertext[] getCiphertexts(int owner) {
+		TelecomCiphertext[] ciphertexts = new TelecomCiphertext[0];
+		ciphertexts = investigationLists.get(owner).toArray(ciphertexts);
+		return ciphertexts;
+	}
+
+	/**
+	 * @return the number of telecom ciphertexts in investigationLists
+	 */
+	protected int ciphertextsRemaining() {
+		int total = 0;
+		for (ArrayList<TelecomCiphertext> list : investigationLists.values()) {
+			total += list.size();
+		}
+		return total;
+	}
+
+	protected void processTelecomResponse(TelecomResponse telecomResponse,
+			int distance) {
+		if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
+			agencyCiphertexts.add(telecomResponse.getAgencyCiphertext());
+			if (distance == maxDistance &&
+					telecomResponse.getTelecomCiphertexts() != null) {
+				println(telecomResponse.getTelecomCiphertexts().length +
+						" not added to queue. Maximum path length reached");
+			} else if (distance == maxDistance) {
+				println("No ciphertexts added to queue. Maximum path length reached");
+			} else if (telecomResponse.getTelecomCiphertexts().length > maxDegree &&
+					distance > 0){
+				println(telecomResponse.getTelecomCiphertexts().length +
+						" not added to queue. Exceeds maximum degree.");
+			} else {
+				for (TelecomCiphertext tc : telecomResponse.getTelecomCiphertexts()) {
+					addTelecomCiphertext(tc);
+				}
+				println(telecomResponse.getTelecomCiphertexts().length + 
+						" added to queue.");
+			}
+		} else if (telecomResponse.getMsgType() == MsgType.ALREADY_SENT) {
+			println("MsgType: " + telecomResponse.getMsgType());
+		} else {
+			System.err.println("Error: MsgType: " + telecomResponse.getMsgType());
+			return;
+		}
 	}
 
 	/**

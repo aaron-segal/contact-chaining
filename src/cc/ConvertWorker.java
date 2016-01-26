@@ -3,6 +3,9 @@ package cc;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
+import cc.SignedTelecomCiphertext.QueryType;
+import cc.TelecomResponse.MsgType;
+
 public class ConvertWorker extends Thread {
 
 	private TelecomKeys keys;
@@ -10,14 +13,16 @@ public class ConvertWorker extends Thread {
 	private TelecomData data;
 	// Where in the array to start convert, and how many ciphertexts we should convert.
 	private int startIndex, toConvert;
+	private QueryType queryType;
 
 	public ConvertWorker(TelecomData data, int startIndex, int toConvert,
-			TelecomKeys keys, int threadId) {
+			TelecomKeys keys, QueryType queryType, int threadId) {
 		this.data = data;
 		this.startIndex = startIndex;
 		this.toConvert = toConvert;
 		this.keys = keys;
 		this.threadId = threadId;
+		this.queryType = queryType;
 	}
 
 	/**
@@ -30,6 +35,7 @@ public class ConvertWorker extends Thread {
 		CommutativeElGamal commEncrypter = new CommutativeElGamal();
 		for (int i = startIndex; i - startIndex < toConvert &&
 				i < data.currentCiphertexts.length; i++) {
+			// First figure out which user is being requested
 			int userId;
 			try {
 				userId = keys.decrypt(data.currentCiphertexts[i].getEncryptedId(),
@@ -38,17 +44,41 @@ public class ConvertWorker extends Thread {
 				e.printStackTrace();
 				return;
 			}
-			if (data.skipUser(userId)) {
-				data.currentAgencyCiphertexts[i] = null;
+
+			// Check to see if this gets an error response
+			MsgType responseType = data.chooseResponseType(userId);
+			if (responseType != MsgType.DATA) {
+				data.currentResponses[i] = new TelecomResponse(responseType);
 				continue;
 			}
-			data.currentAgencyCiphertexts[i] = new BigInteger[1];
-			data.currentAgencyCiphertexts[i][0] = BigInteger.valueOf(userId);
+
+			// If not, compute the appropriate agency ciphertext
+			BigInteger[] agencyCiphertext = new BigInteger[1];
+			agencyCiphertext[0] = BigInteger.valueOf(userId);
 			for (int agencyId : keys.getAgencyIds()) {
-				data.currentAgencyCiphertexts[i] = commEncrypter.encrypt(agencyId,
-						keys.getAgencyPublicKey(agencyId),
-						data.currentAgencyCiphertexts[i]);
+				agencyCiphertext = commEncrypter.encrypt(agencyId,
+						keys.getAgencyPublicKey(agencyId), agencyCiphertext);
 			}
+
+			// If we have reached the maximum chaining distance, stop here
+			if (queryType == QueryType.CONCLUDE) {
+				data.currentResponses[i] = new TelecomResponse(agencyCiphertext);
+				continue;
+			}
+
+			// Otherwise, we need to provide telecom ciphertexts for all neighbors.
+			int[] neighbors = data.getNeighbors(userId);
+			TelecomCiphertext[] encryptedNeighbors =
+					new TelecomCiphertext[neighbors.length];
+			for (int j = 0; j < neighbors.length; j++) {
+				int owner = DataGen.provider(neighbors[j], data.getNumTelecoms());
+				encryptedNeighbors[j] = new TelecomCiphertext();
+				encryptedNeighbors[j].setOwner(owner);
+				encryptedNeighbors[j].setEncryptedId(keys.encrypt(owner,
+						neighbors[j], threadId));
+			}
+			data.currentResponses[i] =
+					new TelecomResponse(agencyCiphertext, encryptedNeighbors);
 		}
 	}
 

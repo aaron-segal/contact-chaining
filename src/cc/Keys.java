@@ -222,28 +222,9 @@ public abstract class Keys {
 	}
 
 	/**
-	 * Uses our keys to sign a telecom ciphertext.
-	 * @param ciphertext The telecom ciphertext to sign.
-	 * @return This party's signature on the ciphertext.
-	 */
-	public byte[] sign(TelecomCiphertext ciphertext) {
-		try {
-			byte[] cipherBytes = Serializer.serialize(ciphertext);
-			signer.update(cipherBytes);
-			return signer.sign();
-		} catch (IOException e) {
-			System.err.println("Malformed TelecomCiphertext");
-			e.printStackTrace();
-		} catch (SignatureException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * Uses our keys to sign a telecom ciphertext.
-	 * @param ciphertext The telecom ciphertext to sign.
-	 * @return This party's signature on the ciphertext.
+	 * Uses our keys to sign some telecom ciphertexts.
+	 * @param ciphertext The telecom ciphertexts to sign.
+	 * @return This party's signature on these ciphertexts.
 	 */
 	public byte[] sign(TelecomCiphertext[] ciphertexts) {
 		try {
@@ -260,13 +241,13 @@ public abstract class Keys {
 	}
 
 	/**
-	 * Uses our keys to sign a telecom response.
-	 * @param response The telecom response to sign.
-	 * @return This party's signature on the response.
+	 * Uses our keys to sign some telecom responses.
+	 * @param response The telecom responses to sign.
+	 * @return This party's signature on the responses.
 	 */
-	public byte[] sign(TelecomResponse response) {
+	public byte[] sign(TelecomResponse[] responses) {
 		try {
-			byte[] cipherBytes = Serializer.serialize(response);
+			byte[] cipherBytes = Serializer.serialize(responses);
 			signer.update(cipherBytes);
 			return signer.sign();
 		} catch (IOException e) {
@@ -280,22 +261,18 @@ public abstract class Keys {
 
 	/**
 	 * Uses a party's key to verify a telecom ciphertext.
-	 * @param id The id of the party who signed the ciphertext.
+	 * @param signerId The id of the party who signed the ciphertext.
 	 * @param signedTC The signed telecom ciphertext.
 	 * @return True if the signature is present and verifies.
 	 */
-	public boolean verify(int id, SignedTelecomCiphertext signedTC) {
-		Signature verifier = verifiers.get(id);
-		byte[] signature = signedTC.getSignatures().get(id);
+	public boolean verify(int signerId, SignedTelecomCiphertext signedTC) {
+		Signature verifier = verifiers.get(signerId);
+		byte[] signature = signedTC.getSignatures().get(signerId);
 		if (signature == null) {
 			return false;
 		}
 		try {
-			if (signedTC.getType() == SignedTelecomCiphertext.QueryType.SEARCH) {
-				verifier.update(Serializer.serialize(signedTC.getCiphertext()));
-			} else {
-				verifier.update(Serializer.serialize(signedTC.getCiphertexts()));
-			}
+			verifier.update(Serializer.serialize(signedTC.getCiphertexts()));
 			return verifier.verify(signature);
 		} catch (SignatureException e) {
 			e.printStackTrace();
@@ -306,13 +283,14 @@ public abstract class Keys {
 		}
 	}
 
-	public boolean verify(int id, TelecomResponse response, byte[] signature) {
-		Signature verifier = verifiers.get(id);
+	public boolean verify(SignedTelecomResponse signedTR) {
+		Signature verifier = verifiers.get(signedTR.getTelecomId());
+		byte[] signature = signedTR.getSignature();
 		if (signature == null) {
 			return false;
 		}
 		try {
-			verifier.update(Serializer.serialize(response));
+			verifier.update(Serializer.serialize(signedTR.getTelecomResponses()));
 			return verifier.verify(signature);
 		} catch (SignatureException e) {
 			e.printStackTrace();

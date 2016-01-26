@@ -6,13 +6,13 @@ import java.util.HashMap;
 public class OversightFinalResultsThread extends Thread {
 
 	private OversightSocket oSocket;
-	private HashMap<Integer, SignedTelecomResponse> lastTR;
+	private HashMap<Integer, SignedTelecomResponse> prevResponses;
 	private boolean concludeOK = false;
 
 	public OversightFinalResultsThread(OversightSocket oSocket,
-			HashMap<Integer, SignedTelecomResponse> lastTR) {
+			HashMap<Integer, SignedTelecomResponse> prevResponses) {
 		this.oSocket = oSocket;
-		this.lastTR = lastTR;
+		this.prevResponses = prevResponses;
 	}
 
 	public void run() {
@@ -23,8 +23,7 @@ public class OversightFinalResultsThread extends Thread {
 		try {
 			// Send the oversight agency the response we got from the previous
 			// telecom so they can stay in sync with us.
-			oSocket.outputStream.writeObject(lastTR);
-			oSocket.outputStream.flush();
+			oSocket.writeObject(prevResponses);
 			// If the everything has gone perfect, the oversight agency should send
 			// us a True.
 			concludeOK = (boolean) oSocket.inputStream.readObject();
@@ -44,4 +43,5 @@ public class OversightFinalResultsThread extends Thread {
 	public int getAgencyId(){
 		return oSocket.getAgencyId();
 	}
+
 }
