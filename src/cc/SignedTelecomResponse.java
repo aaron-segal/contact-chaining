@@ -19,7 +19,7 @@ public class SignedTelecomResponse implements Serializable {
 		telecomResponses[0] = telecomResponse;
 		this.telecomId = telecomId;
 	}
-	
+
 	public SignedTelecomResponse(TelecomResponse[] telecomResponses, int telecomId) {
 		this.telecomResponses = telecomResponses;
 		this.telecomId = telecomId;

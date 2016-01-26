@@ -6,20 +6,23 @@ import java.security.GeneralSecurityException;
 import cc.SignedTelecomCiphertext.QueryType;
 import cc.TelecomResponse.MsgType;
 
-public class ConvertWorker extends Thread {
+public class ResponseWorker extends Thread {
 
 	private TelecomKeys keys;
 	private int threadId;
 	private TelecomData data;
-	// Where in the array to start convert, and how many ciphertexts we should convert.
-	private int startIndex, toConvert;
+	// Where in the array to start working
+	private int startIndex;
+	// Maximum number of ciphertexts to work on
+	private int itemsToDo;
+	// If SEARCH, get neighboring telecoms. If CONCLUDE, don't. 
 	private QueryType queryType;
 
-	public ConvertWorker(TelecomData data, int startIndex, int toConvert,
+	public ResponseWorker(TelecomData data, int startIndex, int itemsToDo,
 			TelecomKeys keys, QueryType queryType, int threadId) {
 		this.data = data;
 		this.startIndex = startIndex;
-		this.toConvert = toConvert;
+		this.itemsToDo = itemsToDo;
 		this.keys = keys;
 		this.threadId = threadId;
 		this.queryType = queryType;
@@ -33,7 +36,7 @@ public class ConvertWorker extends Thread {
 	 */
 	public void run() {
 		CommutativeElGamal commEncrypter = new CommutativeElGamal();
-		for (int i = startIndex; i - startIndex < toConvert &&
+		for (int i = startIndex; i - startIndex < itemsToDo &&
 				i < data.currentCiphertexts.length; i++) {
 			// First figure out which user is being requested
 			int userId;

@@ -16,10 +16,7 @@ import cc.TelecomResponse.MsgType;
 
 /*
  * How we decide how many threads to spawn for a given job:
- * If we have less than 2*MIN_ITEMS_PER_THREAD, we just do 1 thread.
- * At 2*MIN_ITEMS_PER_THREAD, and every interval of MIN_ITEMS_PER_THREAD beyond,
- * we start a new thread up to a maximum of maxThreads * MIN_ITEMS_PER_THREAD.
- * Beyond that, we just divide up the items as evenly as we can among the threads.
+ * We just divide up the items as evenly as we can among the threads.
  */
 
 public class TelecomData {
@@ -39,10 +36,6 @@ public class TelecomData {
 	// current* are accessed by encryption threads
 	public TelecomCiphertext[] currentCiphertexts;
 	public TelecomResponse[] currentResponses;
-
-	// We won't consider starting a new thread for responding unless we can give it
-	// this many items to work on.
-	public static final int MIN_ITEMS_PER_THREAD = 5;
 
 	@SuppressWarnings("unchecked")
 	public TelecomData(String filename, int numTelecoms, TelecomKeys keys, int maxThreads) {
@@ -100,18 +93,23 @@ public class TelecomData {
 		}
 	}
 
+	/**
+	 * Computes an array of telecom responses, in response to a query containing an
+	 * array of telecom ciphertexts.
+	 * @param telecomCiphertexts The query ciphertexts
+	 * @param type SEARCH if agency wants neighbors; CONCLUDE if not
+	 * @return the responses to the query ciphertexts
+	 */
 	public TelecomResponse[] queryResponse(TelecomCiphertext[] telecomCiphertexts,
 			QueryType type) {
 		currentCiphertexts = telecomCiphertexts;
 		currentResponses = new TelecomResponse[currentCiphertexts.length];
-		int threads = currentCiphertexts.length / MIN_ITEMS_PER_THREAD;
-		threads = Math.max(threads, 1);
-		threads = Math.min(threads, maxThreads);
+		int threads = Math.min(currentCiphertexts.length, maxThreads);
 		int itemsPerThread = (currentCiphertexts.length + threads - 1) / threads;
-		// Convert from TelecomCiphertext to AgencyCiphertext in threads
-		ConvertWorker[] workers = new ConvertWorker[threads];
+		// Compute TelecomResponses to TelecomCiphertexts in threads
+		ResponseWorker[] workers = new ResponseWorker[threads];
 		for (int i = 0; i < workers.length; i++) {
-			workers[i] = new ConvertWorker(this, itemsPerThread * i,
+			workers[i] = new ResponseWorker(this, itemsPerThread * i,
 					itemsPerThread, keys, type, i);
 			workers[i].start();
 		}

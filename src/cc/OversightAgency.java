@@ -57,7 +57,7 @@ public class OversightAgency extends Agency {
 	}
 
 	/**
-	 * Reads a TelecomResponse from the Leader and processes it.
+	 * Reads a SignedTelecomResponse from the Leader and processes it.
 	 * @param distance The distance remaining at this point in the search.
 	 * @return True if the response validated OK, false if there was a problem.
 	 * @throws ClassNotFoundException
@@ -94,6 +94,9 @@ public class OversightAgency extends Agency {
 	}
 
 
+	/**
+	 * Begin the contact chaining protocol.
+	 */
 	public void contactChaining() {
 		super.contactChaining();
 		try {
@@ -179,6 +182,9 @@ public class OversightAgency extends Agency {
 		}
 	}
 
+	/**
+	 * Closes stream to the leader.
+	 */
 	public void closeAll() {
 		try {
 			leaderOStream.close();
