@@ -1,6 +1,6 @@
 #!/bin/sh
 cd bin
-for i in 1 12345
+for i in 106 2324
 do
 for l in 2 3
 do
