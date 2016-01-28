@@ -35,11 +35,6 @@ public class DataGenLogNormal {
 		System.err.println("Usage: java cc.DataGen filename numTelecoms numUsers");
 	}
 
-	// Method to return which telecom owns which user id. May be changed later.
-	public static int provider(int userId, int numTelecoms) {
-		return userId % numTelecoms;
-	}
-
 	public static void main(String[] args) {
 		if (args.length < 3) {
 			usage();
@@ -60,12 +55,12 @@ public class DataGenLogNormal {
 		// For each user, generate a blank set of contacts.
 		for (int currId = 1; currId <= nUsers; currId++) {
 			HashSet<Integer> userData = new HashSet<Integer>();
-			graph.get(provider(currId, nTelecoms)).put(currId, userData);
+			graph.get(DataGen.provider(currId, nTelecoms)).put(currId, userData);
 		}
 
 		// For each user, fill out its set of contacts.
 		for (int currId = 1; currId <= nUsers; currId++) {
-			HashSet<Integer> userData = graph.get(provider(currId, nTelecoms)).get(currId);
+			HashSet<Integer> userData = graph.get(DataGen.provider(currId, nTelecoms)).get(currId);
 
 			// Choose a random number of new contacts to make. Pick them at random.
 			int outDegree = (int)Math.ceil(logNorm.sample());
@@ -77,11 +72,11 @@ public class DataGenLogNormal {
 				}
 				// Add the chosen contact to this user's set, and vice versa.
 				userData.add(idToAdd);
-				graph.get(provider(idToAdd, nTelecoms)).get(idToAdd).add(currId);
+				graph.get(DataGen.provider(idToAdd, nTelecoms)).get(idToAdd).add(currId);
 			}
 
 			// Add this user's data to the appropriate telecom
-			graph.get(provider(currId, nTelecoms)).put(currId, userData);
+			graph.get(DataGen.provider(currId, nTelecoms)).put(currId, userData);
 
 			if (currId % 100 == 0) {
 				System.out.println(currId + " users generated");

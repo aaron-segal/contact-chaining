@@ -1,2 +1,2 @@
 cd bin
-java cc.Telecom ..\tests\small\conf\telecoms.conf -c ..\tests\small\conf\telecom1.conf -t 2
+java cc.Telecom ..\tests\smallprop\conf\telecoms.conf -c ..\tests\smallprop\conf\telecom1.conf -t 2

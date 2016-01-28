@@ -12,8 +12,6 @@ import java.util.Random;
 /**
  * We are going to use 1-indexed integer ids for users and 0-indexed integer ids
  * for telecoms.
- * If nTelcoms is the number of telecoms, then the user with id X
- *   belongs to telecom (X % nTelcoms).
  * We are assuming that each user/node has a totally random set of contacts.
  * The degree of each node is distributed as follows:
  *   A node has a 99% chance to be "small", and a 1% chance to be "large".
@@ -25,19 +23,33 @@ import java.util.Random;
  */
 
 public class DataGen {
-	public static double LARGE_CHANCE = 0.01;
-	public static int SMALL_MIN = 3;
-	public static int SMALL_MAX = 20;
-	public static int LARGE_MIN = 5;
-	public static int LARGE_MAX = 500;
+	public static final double LARGE_CHANCE = 0.01;
+	public static final int SMALL_MIN = 3;
+	public static final int SMALL_MAX = 20;
+	public static final int LARGE_MIN = 5;
+	public static final int LARGE_MAX = 500;
+	// The last two digits map a user to a telecom.
+	// If the last two digits are 00-43, it's served by telecom 0; if 44-67, telecom 1; etc.
+	// These numbers from: https://en.wikipedia.org/wiki/List_of_mobile_network_operators
+	public static final int[] TELECOM_PERCENT_CUTOFFS = {44, 68, 85, 100};
+
+
 
 	public static void usage() {
 		System.err.println("Usage: java cc.DataGen filename numTelecoms numUsers");
 	}
 
-	// Method to return which telecom owns which user id. May be changed later.
+	// Method to return which telecom owns which user id.
+	// The last two digits will map a user to a telecom.
 	public static int provider(int userId, int numTelecoms) {
-		return userId % numTelecoms;
+		//return userId % numTelecoms; // Old method
+		int lastDigits = userId % 100;
+		for (int i = 0; i < numTelecoms; i++) {
+			if (lastDigits < TELECOM_PERCENT_CUTOFFS[i]) {
+				return i;
+			}
+		}
+		return numTelecoms - 1;
 	}
 
 	public static void main(String[] args) {

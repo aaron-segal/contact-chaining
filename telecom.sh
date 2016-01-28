@@ -1,3 +1,3 @@
 #!/bin/sh
 cd bin
-java cc.Telecom ../tests/lognorm/conf/telecoms.conf -c ../tests/lognorm/conf/telecom$1.conf
+java cc.Telecom ../tests/proplognorm/conf/telecoms.conf -c ../tests/proplognorm/conf/telecom$1.conf
