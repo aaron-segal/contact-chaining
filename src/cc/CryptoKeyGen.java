@@ -27,6 +27,7 @@ public class CryptoKeyGen {
 	public static final String SUFFIX = ".key";
 	public static final String ENCRYPTION_ALGORITHM = "RSA";
 	public static final String SIGNING_ALGORITHM = "DSA";
+	public static final int KEY_SIZE = 2048;
 
 	public static void usage() {
 		System.out.println("Usage: cc.CryptoKeyGen path minId maxId [-e] [-s]");
@@ -39,7 +40,7 @@ public class CryptoKeyGen {
 					throws NoSuchProviderException, NoSuchAlgorithmException, IOException {
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
 		SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-		keyGen.initialize(1024, random);
+		keyGen.initialize(KEY_SIZE, random);
 		for (int i = 0; i < privateKeyFiles.length; i++) {
 			KeyPair pair = keyGen.generateKeyPair();
 			PrivateKey priv = pair.getPrivate();

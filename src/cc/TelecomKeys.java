@@ -29,7 +29,7 @@ public class TelecomKeys extends Keys {
 
 	private void loadPrivateKey(String privateKeyFilename, int numThreads) throws IOException {
 		FileInputStream privateKeyInput = new FileInputStream(privateKeyFilename);
-		byte[] privateKeyBytes = new byte[1024];
+		byte[] privateKeyBytes = new byte[2048];
 		int read = privateKeyInput.read(privateKeyBytes);
 		privateKeyBytes = Arrays.copyOf(privateKeyBytes, read);
 		privateKeyInput.close();

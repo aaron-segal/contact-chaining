@@ -103,7 +103,7 @@ public abstract class Keys {
 					CryptoKeyGen.SUFFIX)) {
 				// If this is our signing key, read it
 				FileInputStream signingKeyInput = new FileInputStream(keyFile);
-				byte[] signingKeyBytes = new byte[1024];
+				byte[] signingKeyBytes = new byte[2048];
 				int read = signingKeyInput.read(signingKeyBytes);
 				signingKeyBytes = Arrays.copyOf(signingKeyBytes, read);
 				signingKeyInput.close();
@@ -127,7 +127,7 @@ public abstract class Keys {
 				int keyId = Integer.parseInt(strippedFilename);
 				// read it
 				FileInputStream verificationKeyInput = new FileInputStream(keyFile);
-				byte[] verificationKeyBytes = new byte[1024];
+				byte[] verificationKeyBytes = new byte[2048];
 				int read = verificationKeyInput.read(verificationKeyBytes);
 				verificationKeyBytes = Arrays.copyOf(verificationKeyBytes, read);
 				verificationKeyInput.close();
@@ -152,7 +152,7 @@ public abstract class Keys {
 				int keyId = Integer.parseInt(strippedFilename);
 				// read it
 				FileInputStream publicKeyInput = new FileInputStream(keyFile);
-				byte[] publicKeyBytes = new byte[1024];
+				byte[] publicKeyBytes = new byte[2048];
 				int read = publicKeyInput.read(publicKeyBytes);
 				publicKeyBytes = Arrays.copyOf(publicKeyBytes, read);
 				publicKeyInput.close();
