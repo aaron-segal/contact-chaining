@@ -26,7 +26,7 @@ public class OversightFinalResultsThread extends Thread {
 			oSocket.writeObject(prevResponses);
 			// If the everything has gone perfect, the oversight agency should send
 			// us a True.
-			concludeOK = (boolean) oSocket.inputStream.readObject();
+			concludeOK = (boolean) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
 			oSocket.close();

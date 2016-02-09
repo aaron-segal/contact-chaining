@@ -68,6 +68,23 @@ public class LeaderAgency extends Agency {
 		return connected;
 	}
 
+	private void writeObjectToTelecom(int telecomId, Object obj)
+			throws IOException {
+		ObjectOutputStream oos = telecoms.get(telecomId).outputStream;
+		recordBytes(Serializer.objectSize(obj));
+		oos.writeObject(obj);
+		oos.flush();
+		oos.reset();
+	}
+
+	private Object readObjectFromTelecom(int telecomId)
+			throws ClassNotFoundException, IOException {
+		ObjectInputStream ois = telecoms.get(telecomId).inputStream;
+		Object obj = ois.readObject();
+		recordBytes(Serializer.objectSize(obj));
+		return obj;
+	}
+
 	public void contactChaining() {
 		super.contactChaining();
 		int connected = waitForConnections();
@@ -114,11 +131,9 @@ public class LeaderAgency extends Agency {
 		HashMap<Integer, SignedTelecomResponse> prevResponses =
 				new HashMap<Integer, SignedTelecomResponse>();
 		try {
-			ObjectOutputStream oos = telecoms.get(initialOwner).outputStream;
-			ObjectInputStream ois = telecoms.get(initialOwner).inputStream;
-			oos.writeObject(firstSignedTC);
-			oos.flush();
-			SignedTelecomResponse firstSignedResponse = (SignedTelecomResponse) ois.readObject();
+			writeObjectToTelecom(initialOwner, firstSignedTC);
+			SignedTelecomResponse firstSignedResponse =
+					(SignedTelecomResponse) readObjectFromTelecom(initialOwner);
 			prevResponses.put(initialOwner, firstSignedResponse);
 			TelecomResponse telecomResponse = firstSignedResponse.getTelecomResponses()[0];
 			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
@@ -190,9 +205,7 @@ public class LeaderAgency extends Agency {
 					needToInformInitialOwner = false;
 				}
 				try {
-					ObjectOutputStream oos = telecoms.get(telecomId).outputStream;
-					oos.writeObject(nextSignedTC);
-					oos.flush();
+					writeObjectToTelecom(telecomId, nextSignedTC);
 				} catch (IOException e) {
 					System.err.println("Error in connection with telecom " + telecomId);
 					e.printStackTrace();
@@ -205,15 +218,16 @@ public class LeaderAgency extends Agency {
 			prevResponses.clear();
 			for (int telecomId : nextSignedTCs.keySet()) {
 				try {
-					ObjectInputStream ois = telecoms.get(telecomId).inputStream;
-					prevResponses.put(telecomId, (SignedTelecomResponse) ois.readObject());
+					prevResponses.put(telecomId,(SignedTelecomResponse)
+							readObjectFromTelecom(telecomId));
 					TelecomResponse[] telecomResponses =
 							prevResponses.get(telecomId).getTelecomResponses();
 					for (TelecomResponse telecomResponse : telecomResponses) {
 						processTelecomResponse(telecomResponse, distance);
 					}
 				} catch (IOException e) {
-					System.err.println("Error in connection with telecom " + telecomId);
+					System.err.println("Error in connection with telecom " +
+							telecomId);
 					e.printStackTrace();
 					return;
 				} catch (ClassNotFoundException e) {
@@ -227,7 +241,8 @@ public class LeaderAgency extends Agency {
 		OversightFinalResultsThread[] finalThreads =
 				new OversightFinalResultsThread[oversight.length];
 		for (int i = 0; i < finalThreads.length; i++) {
-			finalThreads[i] = new OversightFinalResultsThread(oversight[i], prevResponses);
+			finalThreads[i] = new OversightFinalResultsThread(oversight[i],
+					prevResponses);
 			finalThreads[i].start();
 		}
 		for (OversightFinalResultsThread ofrt : finalThreads) {

@@ -27,7 +27,7 @@ public class OversightSearchThread extends Thread {
 			oSocket.writeObject(prevResponses);
 			// If the oversight agency is in sync with us, they will know what our
 			// final queries should look like, and sign them.
-			signatures = (HashMap<Integer, byte[]>) oSocket.inputStream.readObject();
+			signatures = (HashMap<Integer, byte[]>) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
 			oSocket.close();

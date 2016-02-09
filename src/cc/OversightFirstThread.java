@@ -17,17 +17,16 @@ public class OversightFirstThread extends Thread {
 	public void run() {
 		try {
 			// SYN protocol: Learn agency's id, tell it targetId
-			oSocket.setAgencyId(oSocket.inputStream.readInt());
+			oSocket.setAgencyId(oSocket.readInt());
 			oSocket.lAgency.println("Read oversight agency id " + oSocket.getAgencyId());
-			oSocket.outputStream.writeInt(oSocket.lAgency.getTargetId());
-			oSocket.outputStream.flush();
+			oSocket.writeInt(oSocket.lAgency.getTargetId());
 			oSocket.open = true;
 
 			// Send the signed telecom ciphertext to the oversight agency
 			oSocket.writeObject(stc);
 
 			// Read the new signature back
-			signature = (byte[]) oSocket.inputStream.readObject();
+			signature = (byte[]) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
 			oSocket.close();

@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicLong;
 
 import cc.TelecomResponse.MsgType;
 
@@ -37,6 +38,7 @@ public abstract class Agency {
 
 
 	private long startSetupTime, startProtoTime, finishTime;
+	private AtomicLong networkBytes;
 	private Date timeStamp; // The date and time when the protocol began
 
 	public static final String ID = "ID";
@@ -183,10 +185,15 @@ public abstract class Agency {
 			return;
 		}
 		targetId = Integer.parseInt(config.getProperty(TARGET_ID, "0"));
+		networkBytes = new AtomicLong();
 		agencyCiphertexts = new ArrayList<BigInteger[]>();
 		investigationLists = new HashMap<Integer, ArrayList<TelecomCiphertext>>();
 	}
 
+
+	public void recordBytes(int bytesRead) {
+		networkBytes.addAndGet(bytesRead);
+	}
 
 	/**
 	 * Adds the specified telecomCiphertext to the list, marking that we will
@@ -284,11 +291,12 @@ public abstract class Agency {
 		println("Setup time (ms)      : " + (startProtoTime - startSetupTime));
 		println("Protocol runtime (ms): " + (finishTime - startProtoTime));
 		println("Total runtime (ms)   : " + (finishTime - startSetupTime));
+		println("Bytes transferred (B): " + networkBytes.get());
 
 		/* 
 		 * If a log file has been specified, save timing info to it.
 		 * The top line of the log file should be:
-		 * Timestamp,Agencies,Degree of target,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),
+		 * Timestamp,Agencies,Degree of target,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),Bytes transferred (B),
 		 */
 		if (suppressTiming || config.getProperty(TIMING_RECORD_PATH, "").isEmpty()) {
 			return;
@@ -309,6 +317,7 @@ public abstract class Agency {
 			bw.write((startProtoTime - startSetupTime) + ",");
 			bw.write((finishTime - startProtoTime) + ",");
 			bw.write((finishTime - startSetupTime) + ",");
+			bw.write(networkBytes.get() + ",");
 			bw.newLine();
 			bw.flush();
 			bw.close();

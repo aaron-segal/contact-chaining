@@ -12,4 +12,9 @@ public class Serializer {
 		oos.writeObject(obj);
 		return baos.toByteArray();
 	}
+	
+	public static int objectSize(Object obj) throws IOException{
+		Serializable serObj = (Serializable) obj;
+		return serialize(serObj).length;
+	}
 }

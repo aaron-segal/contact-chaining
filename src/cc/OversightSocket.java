@@ -9,8 +9,8 @@ public class OversightSocket {
 
 	public Socket socket;
 	private int agencyId = Integer.MIN_VALUE;
-	public ObjectInputStream inputStream;
-	public ObjectOutputStream outputStream;
+	private ObjectInputStream inputStream;
+	private ObjectOutputStream outputStream;
 	public LeaderAgency lAgency;
 	public boolean open = false;
 
@@ -44,12 +44,30 @@ public class OversightSocket {
 		return agencyId;
 	}
 
-	public void writeObject(Object o) throws IOException {
-		outputStream.writeObject(o);
+	public void writeObject(Object obj) throws IOException {
+		lAgency.recordBytes(Serializer.objectSize(obj));
+		outputStream.writeObject(obj);
 		outputStream.flush();
 		outputStream.reset();
 	}
+	
+	public void writeInt(int i) throws IOException {
+		lAgency.recordBytes(4);
+		outputStream.writeInt(i);
+		outputStream.flush();
+	}
 
+	public Object readObject() throws ClassNotFoundException, IOException {
+		Object obj = inputStream.readObject();
+		lAgency.recordBytes(Serializer.objectSize(obj));
+		return obj;
+	}
+	
+	public int readInt() throws IOException {
+		lAgency.recordBytes(4);
+		return inputStream.readInt();
+	}
+	
 	/**
 	 * @param agencyId the agencyId to set
 	 */
