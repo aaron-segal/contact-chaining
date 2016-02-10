@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public abstract class Agency {
 
 	private long startSetupTime, startProtoTime, finishTime;
 	private AtomicLong networkBytes;
+	private long agencyCpuTime, telecomCpuTime;
 	private Date timeStamp; // The date and time when the protocol began
 
 	public static final String ID = "ID";
@@ -58,6 +61,8 @@ public abstract class Agency {
 	protected ArrayList<BigInteger[]> agencyCiphertexts;
 	protected HashMap<Integer, ArrayList<TelecomCiphertext>> investigationLists;
 
+	protected ThreadMXBean bean;
+
 
 	protected void usage() {
 		System.err.println("Usage: java cc.Agency config_file [-c config_file] [-d max_degree] [-i id_of_target] [-l max_length] [-k private_key_file] [-o output_path] [-q] [-s]");
@@ -65,6 +70,7 @@ public abstract class Agency {
 
 	public Agency(String[] args) {
 		startSetupTime = System.currentTimeMillis();
+		bean = ManagementFactory.getThreadMXBean();
 		if (args.length < 1) {
 			usage();
 			System.exit(1);
@@ -186,13 +192,37 @@ public abstract class Agency {
 		}
 		targetId = Integer.parseInt(config.getProperty(TARGET_ID, "0"));
 		networkBytes = new AtomicLong();
+		agencyCpuTime = 0;
+		telecomCpuTime = 0;
 		agencyCiphertexts = new ArrayList<BigInteger[]>();
 		investigationLists = new HashMap<Integer, ArrayList<TelecomCiphertext>>();
 	}
 
 
-	public void recordBytes(int bytesRead) {
-		networkBytes.addAndGet(bytesRead);
+	/**
+	 * Stores a number of bytes sent or received over a network. Thread-safe.
+	 * @param bytesTransferred The number of bytes sent or received.
+	 */
+	public void recordBytes(long bytesTransferred) {
+		networkBytes.addAndGet(bytesTransferred);
+	}
+
+	/**
+	 * Stores the CPU Time used by an agency thread.
+	 * Not thread-safe.
+	 * @param time CPU time to store, in nanoseconds.
+	 */
+	public void recordAgencyCpuTime(long time) {
+		agencyCpuTime += time;
+	}
+
+	/**
+	 * Stores the CPU Time used by a telecom.
+	 * Not thread-safe.
+	 * @param time CPU time to store, in nanoseconds.
+	 */
+	public void recordTelecomCpuTime(long time) {
+		telecomCpuTime += time;
 	}
 
 	/**
@@ -287,16 +317,22 @@ public abstract class Agency {
 	 * specified.
 	 */
 	protected void reportTiming() {
+		recordAgencyCpuTime(bean.getCurrentThreadCpuTime());
 		finishTime = System.currentTimeMillis();
-		println("Setup time (ms)      : " + (startProtoTime - startSetupTime));
-		println("Protocol runtime (ms): " + (finishTime - startProtoTime));
-		println("Total runtime (ms)   : " + (finishTime - startSetupTime));
-		println("Bytes transferred (B): " + networkBytes.get());
+		agencyCpuTime /= 1000000L;
+		telecomCpuTime /= 1000000L;
+		long kilobytes = networkBytes.get() / 1024L;
+		println("Setup time (ms)       : " + (startProtoTime - startSetupTime));
+		println("Protocol runtime (ms) : " + (finishTime - startProtoTime));
+		println("Total runtime (ms)    : " + (finishTime - startSetupTime));
+		println("Agency CPU Time (ms)  : " + agencyCpuTime);
+		println("Telecom CPU Time (ms) : " + telecomCpuTime);
+		println("Bytes transferred (KB): " + kilobytes);
 
 		/* 
 		 * If a log file has been specified, save timing info to it.
 		 * The top line of the log file should be:
-		 * Timestamp,Agencies,Degree of target,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),Bytes transferred (B),
+		 * Timestamp,Agencies,Degree of target,Ciphertexts in result,Maximum path length,Maximum branching degree,Setup time (ms),Protocol time (ms),Total time (ms),Agency CPU Time (ms),Telecom CPU Time (ms),Bytes transferred (KB),
 		 */
 		if (suppressTiming || config.getProperty(TIMING_RECORD_PATH, "").isEmpty()) {
 			return;
@@ -317,7 +353,9 @@ public abstract class Agency {
 			bw.write((startProtoTime - startSetupTime) + ",");
 			bw.write((finishTime - startProtoTime) + ",");
 			bw.write((finishTime - startSetupTime) + ",");
-			bw.write(networkBytes.get() + ",");
+			bw.write(agencyCpuTime + ",");
+			bw.write(telecomCpuTime + ",");
+			bw.write(kilobytes + ",");
 			bw.newLine();
 			bw.flush();
 			bw.close();

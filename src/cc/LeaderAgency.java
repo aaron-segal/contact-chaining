@@ -119,6 +119,7 @@ public class LeaderAgency extends Agency {
 			} catch (InterruptedException e) {
 			} finally {
 				firstSignedTC.addSignature(oft.getAgencyId(), oft.getSignature());
+				recordAgencyCpuTime(oft.getCpuTime());
 			}
 		}
 
@@ -135,6 +136,7 @@ public class LeaderAgency extends Agency {
 			SignedTelecomResponse firstSignedResponse =
 					(SignedTelecomResponse) readObjectFromTelecom(initialOwner);
 			prevResponses.put(initialOwner, firstSignedResponse);
+			recordTelecomCpuTime(firstSignedResponse.getCpuTime());
 			TelecomResponse telecomResponse = firstSignedResponse.getTelecomResponses()[0];
 			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
 				processTelecomResponse(telecomResponse, 0);
@@ -188,6 +190,7 @@ public class LeaderAgency extends Agency {
 						nextSignedTCs.get(telecomId).addSignature(
 								ost.getAgencyId(), ost.getSignature(telecomId));
 					}
+					recordAgencyCpuTime(ost.getCpuTime());
 				}
 			}
 
@@ -218,8 +221,10 @@ public class LeaderAgency extends Agency {
 			prevResponses.clear();
 			for (int telecomId : nextSignedTCs.keySet()) {
 				try {
-					prevResponses.put(telecomId,(SignedTelecomResponse)
-							readObjectFromTelecom(telecomId));
+					SignedTelecomResponse prevResponse = (SignedTelecomResponse)
+							readObjectFromTelecom(telecomId);
+					recordTelecomCpuTime(prevResponse.getCpuTime());
+					prevResponses.put(telecomId, prevResponse);
 					TelecomResponse[] telecomResponses =
 							prevResponses.get(telecomId).getTelecomResponses();
 					for (TelecomResponse telecomResponse : telecomResponses) {
@@ -250,10 +255,14 @@ public class LeaderAgency extends Agency {
 				ofrt.join();
 			} catch (InterruptedException e) {
 			} finally {
-				if (!ofrt.concludeOK()) {
+				long oCpuTime = ofrt.getOversightCpuTime();
+				if (oCpuTime < 0) {
 					System.err.println("Didn't get an OK from oversight agency " +
 							ofrt.getAgencyId() + "!");
+				} else {
+					recordAgencyCpuTime(oCpuTime);
 				}
+				recordAgencyCpuTime(ofrt.getCpuTime());
 			}
 		}
 	}

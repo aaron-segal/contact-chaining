@@ -170,8 +170,8 @@ public class OversightAgency extends Agency {
 			}
 
 			// If we get to this point, we're done with the main loop.
-			// The LeaderAgency wants an OK from us to show we received everything.
-			leaderOStream.writeObject(true);
+			// Tell the leader how much CPU time we spent on this.
+			leaderOStream.writeLong(bean.getCurrentThreadCpuTime());
 			leaderOStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -67,6 +67,11 @@ public class OversightSocket {
 		lAgency.recordBytes(4);
 		return inputStream.readInt();
 	}
+
+	public long readLong() throws IOException {
+		lAgency.recordBytes(8);
+		return inputStream.readLong();
+	}
 	
 	/**
 	 * @param agencyId the agencyId to set

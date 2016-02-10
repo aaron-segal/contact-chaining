@@ -37,6 +37,10 @@ public class TelecomData {
 	public TelecomCiphertext[] currentCiphertexts;
 	public TelecomResponse[] currentResponses;
 
+	// Used for tracking CPU time.
+	private long cpuTime = 0L;
+
+
 	@SuppressWarnings("unchecked")
 	public TelecomData(String filename, int numTelecoms, TelecomKeys keys, int maxThreads) {
 		try {
@@ -117,10 +121,23 @@ public class TelecomData {
 			try {
 				workers[i].join();
 			} catch (InterruptedException e) {
+			} finally {
+				cpuTime += workers[i].getCpuTime();
 			}
 		}
 		// At this point, we are done.
 		return currentResponses;
+	}
+
+	/**
+	 * Returns the CPU time used by the telecom's subthreads since the last time
+	 * this method was called.
+	 * @return the CPU time (ns)
+	 */
+	public long getCpuTime() {
+		long oldCpuTime = cpuTime;
+		cpuTime = 0;
+		return oldCpuTime;
 	}
 
 	/**

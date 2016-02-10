@@ -3,7 +3,7 @@ package cc;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class OversightSearchThread extends Thread {
+public class OversightSearchThread extends CPUTrackingThread {
 
 	private OversightSocket oSocket;
 	private HashMap<Integer, SignedTelecomResponse> prevResponses;
@@ -11,12 +11,13 @@ public class OversightSearchThread extends Thread {
 
 	public OversightSearchThread(OversightSocket oSocket,
 			HashMap<Integer, SignedTelecomResponse> prevResponses) {
+		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void run() {
+	public void runReal() {
 		if (!oSocket.open) {
 			System.err.println("Error: Oversight socket " + oSocket.getAgencyId() + " is closed!");
 			return;

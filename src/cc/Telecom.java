@@ -4,6 +4,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
@@ -26,6 +28,9 @@ public class Telecom {
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
 
+	private ThreadMXBean bean;
+	private long lastCpuRecording;
+
 	// Included for additional safety. Use the configurable
 	// MAX_THREADS instead.
 	public static final int MAX_THREADS_ALLOWED = 16;
@@ -45,6 +50,8 @@ public class Telecom {
 	}
 
 	public Telecom(String[] args) {
+		bean = ManagementFactory.getThreadMXBean();
+		lastCpuRecording = 0;
 
 		if (args.length < 1) {
 			usage();
@@ -163,6 +170,12 @@ public class Telecom {
 	private void sendResponse(TelecomResponse[] responses) throws IOException {
 		SignedTelecomResponse signedTR = new SignedTelecomResponse(responses, id);
 		signedTR.setSignature(keys.sign(responses));
+		// Add the cpu time from this thread plus all subthreads to this message.
+		long currentCpuTime = bean.getCurrentThreadCpuTime();
+		long cpuTimeToSend = data.getCpuTime() +
+				(currentCpuTime - lastCpuRecording);
+		lastCpuRecording = currentCpuTime;
+		signedTR.setCpuTime(cpuTimeToSend);
 		outputStream.writeObject(signedTR);
 		outputStream.flush();
 	}

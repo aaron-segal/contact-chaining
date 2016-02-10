@@ -13,6 +13,7 @@ public class SignedTelecomResponse implements Serializable {
 	private TelecomResponse[] telecomResponses;
 	private int telecomId;
 	private byte[] signature;
+	private long cpuTime;
 
 	public SignedTelecomResponse(TelecomResponse telecomResponse, int telecomId) {
 		telecomResponses = new TelecomResponse[1];
@@ -58,6 +59,20 @@ public class SignedTelecomResponse implements Serializable {
 	 */
 	public void setTelecomId(int telecomId) {
 		this.telecomId = telecomId;
+	}
+
+	/**
+	 * @return the cpuTime
+	 */
+	public long getCpuTime() {
+		return cpuTime;
+	}
+
+	/**
+	 * @param cpuTime the cpuTime to set
+	 */
+	public void setCpuTime(long cpuTime) {
+		this.cpuTime = cpuTime;
 	}
 
 }

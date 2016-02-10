@@ -3,19 +3,20 @@ package cc;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class OversightFinalResultsThread extends Thread {
+public class OversightFinalResultsThread extends CPUTrackingThread {
 
 	private OversightSocket oSocket;
 	private HashMap<Integer, SignedTelecomResponse> prevResponses;
-	private boolean concludeOK = false;
+	private long oversightCpuTime = -1;
 
 	public OversightFinalResultsThread(OversightSocket oSocket,
 			HashMap<Integer, SignedTelecomResponse> prevResponses) {
+		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;
 	}
 
-	public void run() {
+	public void runReal() {
 		if (!oSocket.open) {
 			System.err.println("Error: Oversight socket " + oSocket.getAgencyId() + " is closed!");
 			return;
@@ -26,18 +27,15 @@ public class OversightFinalResultsThread extends Thread {
 			oSocket.writeObject(prevResponses);
 			// If the everything has gone perfect, the oversight agency should send
 			// us a True.
-			concludeOK = (boolean) oSocket.readObject();
+			oversightCpuTime = oSocket.readLong();
 		} catch (IOException e) {
-			e.printStackTrace();
-			oSocket.close();
-		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			oSocket.close();
 		}
 	}
 
-	public boolean concludeOK(){
-		return concludeOK;
+	public long getOversightCpuTime(){
+		return oversightCpuTime;
 	}
 
 	public int getAgencyId(){

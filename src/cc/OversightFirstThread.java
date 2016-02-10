@@ -2,7 +2,7 @@ package cc;
 
 import java.io.IOException;
 
-public class OversightFirstThread extends Thread {
+public class OversightFirstThread extends CPUTrackingThread {
 
 	private OversightSocket oSocket;
 	private SignedTelecomCiphertext stc;
@@ -10,11 +10,12 @@ public class OversightFirstThread extends Thread {
 
 	public OversightFirstThread(OversightSocket oSocket,
 			SignedTelecomCiphertext stc) {
+		super();
 		this.oSocket = oSocket;
 		this.stc = stc;
 	}
 
-	public void run() {
+	public void runReal() {
 		try {
 			// SYN protocol: Learn agency's id, tell it targetId
 			oSocket.setAgencyId(oSocket.readInt());

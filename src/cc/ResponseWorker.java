@@ -6,7 +6,7 @@ import java.security.GeneralSecurityException;
 import cc.SignedTelecomCiphertext.QueryType;
 import cc.TelecomResponse.MsgType;
 
-public class ResponseWorker extends Thread {
+public class ResponseWorker extends CPUTrackingThread {
 
 	private TelecomKeys keys;
 	private int threadId;
@@ -20,6 +20,7 @@ public class ResponseWorker extends Thread {
 
 	public ResponseWorker(TelecomData data, int startIndex, int itemsToDo,
 			TelecomKeys keys, QueryType queryType, int threadId) {
+		super();
 		this.data = data;
 		this.startIndex = startIndex;
 		this.itemsToDo = itemsToDo;
@@ -34,7 +35,7 @@ public class ResponseWorker extends Thread {
 	 * items have been converted, or the end of the array is reached. 
 	 * Duplicate items will appear as null agency ciphertexts.
 	 */
-	public void run() {
+	public void runReal() {
 		CommutativeElGamal commEncrypter = new CommutativeElGamal();
 		for (int i = startIndex; i - startIndex < itemsToDo &&
 				i < data.currentCiphertexts.length; i++) {
