@@ -1,14 +1,16 @@
-package cc;
+package nocrypto;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 
-public class TelecomScan {
+public class Telecom {
 
 	//if the -q flag is passed, nothing will be output except at the very end
 	public static boolean quiet = false;
@@ -17,12 +19,14 @@ public class TelecomScan {
 	protected int maxThreads;
 	protected int numAgencies, numTelecoms, id;
 	protected TelecomData data;
-	protected TelecomKeys keys;
 	protected ServerSocket listenSocket = null;
 
 	private Socket agencySocket;
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
+
+	private ThreadMXBean bean;
+	private long lastCpuRecording;
 
 	// Included for additional safety. Use the configurable
 	// MAX_THREADS instead.
@@ -42,7 +46,9 @@ public class TelecomScan {
 		System.err.println("Usage: java cc.Telecom config_file [-c config_file] [-i input_data_file] [-k private_key_file] [-t threads] [-q]");
 	}
 
-	public TelecomScan(String[] args) {
+	public Telecom(String[] args) {
+		bean = ManagementFactory.getThreadMXBean();
+		lastCpuRecording = 0;
 
 		if (args.length < 1) {
 			usage();
@@ -120,21 +126,17 @@ public class TelecomScan {
 		}
 		id = Integer.parseInt(config.getProperty(ID));
 		println("ID = " + id);
-		try {
-			keys = new TelecomKeys(config.getProperty(PRIVATE_KEY),
-					config.getProperty(PUBLIC_KEYS),
-					config.getProperty(SIGNING_KEYPATH),
-					id,
-					Agency.getAgencyIds(numAgencies),
-					maxThreads);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
 
-		data = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms, keys,
+		data = new TelecomData(config.getProperty(INPUT_FILE), numTelecoms,
 				maxThreads);
 
+		try {
+			listenSocket = new ServerSocket(port);
+			println("IP:Host = " + "127.0.0.1" + ":" + port);
+		} catch (IOException e) {
+			System.err.println("Could not listen on port:" + port);
+			return;
+		}
 	}
 
 	protected void println(String s) {
@@ -143,16 +145,55 @@ public class TelecomScan {
 		}
 	}
 
-	public int scanForSize(int targetSize) {
-		for (int userId = 0; userId < 500000; userId++) {
-			int[] neighbors = data.getNeighbors(userId);
-			if (neighbors != null && neighbors.length == targetSize) {
-				return userId;
-			}
-		}
-		return -1; 	
+	private void sendResponse(TelecomResponse[] responses) throws IOException {
+		BatchedTelecomResponse signedTR = new BatchedTelecomResponse(responses, id);
+		// Add the cpu time from this thread plus all subthreads to this message.
+		long currentCpuTime = bean.getCurrentThreadCpuTime();
+		long cpuTimeToSend = data.getCpuTime() +
+				(currentCpuTime - lastCpuRecording);
+		lastCpuRecording = currentCpuTime;
+		signedTR.setCpuTime(cpuTimeToSend);
+		outputStream.writeObject(signedTR);
+		outputStream.flush();
 	}
 
+	// Waits for a connection, then responds to requests over that connection.
+	// Does this forever.
+	public void serveRequests() {
+		// This while loop lets the telecom run continuously as a server,
+		// across multiple executions of protocol.
+		while (true) {
+			try {
+				agencySocket = listenSocket.accept();
+				println("Got a connection from agency at " +
+						agencySocket.getInetAddress().toString());
+				outputStream = new ObjectOutputStream(agencySocket.getOutputStream());
+				inputStream = new ObjectInputStream(agencySocket.getInputStream());
+				data.resetSent();
+				// This while loop makes sure that we continuously respond to
+				// queries over our open connection. We don't need a separate
+				// thread for this, because we only ever expect to have one
+				// connection at a time.
+				while (true) {
+					BatchedTelecomRecord signedTC =
+							(BatchedTelecomRecord) inputStream.readObject();
+
+					// Update maxDegree if we don't already know it
+					if (data.getMaxDegree() == Integer.MAX_VALUE &&
+							signedTC.getMaxDegree() > 0) {
+						data.setMaxDegree(signedTC.getMaxDegree());
+					}
+					sendResponse(data.queryResponse(signedTC.getRecords(),
+							signedTC.getType()));
+				}
+			} catch (IOException e) {
+				System.err.println("Connection lost. Waiting for new connection");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+	}
 
 	public void close() {
 		try {
@@ -163,9 +204,8 @@ public class TelecomScan {
 	}
 
 	public static void main(String[] args) {
-		TelecomScan primary = new TelecomScan(args);
-		System.out.println(primary.scanForSize(28));
-		System.out.println(primary.scanForSize(97));
+		Telecom primary = new Telecom(args);
+		primary.serveRequests();
 		primary.close();
 	}
 
