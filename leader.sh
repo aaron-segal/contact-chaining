@@ -1,6 +1,6 @@
 #!/bin/sh
 cd bin
-for i in 1 10 100 1000
+for i in 10 20 100 200 1000 2000 10000 20000
 do
 for l in 2 3
 do
