@@ -307,62 +307,38 @@ To experiment with differently sized output sets, we ran our protocol many times
 
 
 
-%These results are important in evaluating how practical our lawful contact-chaining protocol would be it were put into practice by government agencies and telecoms. However, our data set is relatively small compared to the databases held by real telecommunications companies, and each company handles that data using different technologies. The absolute running time and CPU usage of executing this protocol could vary from telecom to telecom. Therefore, we also produced a implementation of the contact-chaining protocol which omits all cryptographic operations. This version of the protocol does not preserve the privacy of users. By comparing the performance of our lawful contact-chaining protocol with the zero-privacy contact-chaining protocol, however, we can get a sense of the ``cost'' of privacy and accountability as compared to the practice of releasing plaintext data to government surveillance.
+These results are important in evaluating how practical our lawful contact-chaining protocol would be it were put into practice by government agencies and telecoms. However, our data set is relatively small compared to the databases held by real telecommunications companies, and each company handles that data using different technologies. The absolute running time and CPU usage of executing this protocol could vary from telecom to telecom. Therefore, we also produced a implementation of the contact-chaining protocol which omits all cryptographic operations. This version of the protocol does not preserve the privacy of users. By comparing the performance of our lawful contact-chaining protocol with the zero-cryptography contact-chaining protocol, however, we can get a sense of the ``cost'' of privacy and accountability as compared to the practice of releasing plaintext data to government surveillance.
 
 
 
 \subsubsection{Results}
 
+%Adding additional line breaks to this section will interfere with the formatting.
 \begin{figure*}[t]
-
 \centering
-
 \begin{subfigure}{.33\textwidth}
-
 \centering
-
 \includegraphics[width=0.99\textwidth]{runtime.pdf}
-
 \captionsetup{justification=centering}
-
 \caption{Protocol Runtime}
-
 \label{fig:runtime}
-
 \end{subfigure}\hfill
-
 \begin{subfigure}{.33\textwidth}
-
 \centering
-
 \includegraphics[width=0.99\textwidth]{cputime.pdf}
-
 \captionsetup{justification=centering}
-
 \caption{CPU Time}
-
 \label{fig:cputime}
-
 \end{subfigure}\hfill
-
 \begin{subfigure}{.33\textwidth}
-
 \centering
-
 \includegraphics[width=0.99\textwidth]{bandwidth.pdf}
-
 \captionsetup{justification=centering}
-
 \caption{Network Data}
-
 \label{fig:data}
-
 \end{subfigure}
-
 \caption{Performance of Lawful Contact-Chaining}
-
 \label{fig:performance}
-
 \end{figure*}
 
 
@@ -371,3 +347,4 @@ Our implementation of lawful contact-chaining performed well. Our experiments sh
 
 We found that our protocol was able to process, in the average case, 197.4 ciphertexts per second. To return to our example from earlier of a network with an average of 30 contacts per user, a lawful contact-chaining search with $k=2$ would have 900 users in the output, and a search with $k=3$ would have 27,000 users in the output. To compare these times to some of our acutal experiments, we found that a search that returned 937 ciphertexts took 6.86 seconds to run, and a search that returned 27,338 ciphertexts took 109.55 seconds to run. To provide another point of comparison, \cite{sff-foci2014} referred to the ``High Country Bandits'' case, in which the FBI performed an intersection of 150,000 phone number to help solve a series of bank robberies. In one of our experiments with lawful contact chaining, we find that a similarly sized data set of 149,535 ciphertexts took 625.08 seconds - 10.4 minutes - to compile with our protocol. Given the context of a criminal investigation, we feel these running times are quite reasonable. 
 
+The zero-cryptography version of our program ran, predictably, more quickly than the lawful privacy-preserving version. The total CPU time across all telecoms needed for our zero-crypto implementation never rose above ten seconds, even in the largest cases. This result allows us to disambiguate the cost of \emph{information retrieval} from \emph{privacy protection}. The linear relationship between the size of the encrypted user data set and the performance in terms of running time, CPU time, and network data usage of the protocol all remain even when we subrtract out the time to run all non-cryptgraphic parts of the protocol. We therefore conclude that, even given the potental database operations real telecoms would have to contend with, the cost of adding privacy-preservation to the contact-chaining protocol will remain reasonable.
