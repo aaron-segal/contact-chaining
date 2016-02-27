@@ -44,3 +44,8 @@ Temporary Items
 *.class
 testoutput.txt
 tests/lognorm/~$*.xlsx
+*.out
+*.log
+paper/submission.pdf
+*.aux
+paper/submission.idx

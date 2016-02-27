@@ -1,9 +1,30 @@
-\section{Introduction To Contact Chaining}
+\section{Introduction}
+As networked devices become more available, more capable, and more ubiquitous
+in everyday life, tension mounts between users' desire to safeguard their 
+personal information and government agencies' desire to use that personal 
+information in their pursuit of criminals and terrorists.  For example, 
+both the heated (and still unresolved) discussion about the Snowden 
+revelations that started in 2013 and the ongoing dispute between Apple and 
+the US Justice Department are understood by many people
+as examples of an unpleasant, stark choice: Citizens can either have
+secure devices and control over their personal information, or they can have
+law-enforcement and intelligence agencies with the tools that they need to
+keep the country safe. We regard this stark choice as a false dichotomy and 
+assert that, by deploying appropriate security technology in the context of 
+sound policy and the rule of law, we can have both user privacy and effective 
+law enforcement and intelligence.
 
-Contact chaining is a form of government surveillance. The goal of contact chaining is to use information about social connections between identities, such as records of phone calls between one number and another, to identify members of a criminal organization or terrorist group. Starting with one or more suspects whose identities are known, the government aims to consider contacts of those suspects. These can be \emph{direct contacts}, such as two people who spoke on the phone, or \emph{extended contacts}, such as two people connected by a chain of two or more phone calls. If Alice calls Bob, and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and Charlie), but Alice and Charlie are extended contacts. We may also say that Alice and Charlie are at a distance of 2 in the social graph (since the shortest number of phone calls that connect Alice to Charlie is 2).
+At first blush, it may seem that a symposium on ``privacy-enhancing 
+technologies'' is an odd place for results about ``accountable surveillance.''
+No doubt some in the PETS community wish to prevent government agencies 
+(as well as large corporations and other powerful entities) from conducting 
+{\it any} surveillance whatsoever.  As explained in \cite{sff-foci2014}, a 
+global communication system entirely free of surveillance may be appealing in
+the abstract, but it is not a very useful goal in practice.  Law enforcement
+and intelligence agencies have always been and will continue to be active 
+on the Internet and in all national- and global-scale communication systems.
+The challenge for the technical community is to build systems that enable
+government agencies to collect relevant data that they are legally authorized
+to collect, to be held accountable to the citizens they serve, and to respect 
+privacy of innocent users.
 
-Without mechanisms to preserve privacy, a contact chaining search can collect a surprising large group of users' information. And, unless criminals or terrorists only contact other members of their organizations, most of them are unlikely to be the intended targets of the investigation. This is a large and unnecessary intrusion of privacy. These untargeted users may nevertheless face unwarranted government scrutiny, intrusive investigation, or a risk that their sensitive phone histories may be leaked accidentally.
-
-We propose to replace a contact chaining search in which a single government agency collects user data in the clear from the telecoms who own it with a \emph{privacy-preserving contact chaining protocol}. This protocol involves multiple government agencies, each of whom must actively agree to each step of the search, or the search ends. Instead of revealing to the agencies a large, plaintext list of phone numbers and their connections to each other, it gives the agencies only an encrypted list of phone numbers. The numbers in this list are encrypted using the public keys of all three agencies in a randomized, public-key, commutative cryptosystem (such as ElGamal). This output can then be compared with other encrypted lists, such as encrypted cell tower dumps, watch lists, or the output from another run of this protocol. By using the protocol described in~\cite{bandits}, the phone numbers that appear in multiple lists can be decrypted jointly by the agencies, while other phone numbers remain encrypted and unreadable as long as the government agencies do not all collude.
-
-In section \ref{sec:proto} we discuss the participants, inputs, outputs, and assumptions of our privacy-preserving contact chaining protocol, and present two versions of the protocol itself in sections \ref{sec:proto1} and \ref{sec:proto2}. In section \ref{sec:discuss} we discuss the privacy of our protocol.

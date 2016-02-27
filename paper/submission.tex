@@ -1,0 +1,133 @@
+\documentclass[USenglish,oneside,twocolumn]{article}
+
+\usepackage[utf8]{inputenc}%(only for the pdftex engine)
+%\RequirePackage[no-math]{fontspec}%(only for the luatex or the xetex engine)
+\usepackage[big]{dgruyter_NEW}
+ 
+\DOI{foobar}
+
+\cclogo{\includegraphics{by-nc-nd.pdf}}
+
+\DeclareMathOperator{\Enc}{Enc}
+
+\DeclareMathOperator{\Dec}{Dec}
+
+\DeclareMathOperator{\de}{deg}
+
+\usepackage{subcaption} 
+ 
+\begin{document}
+ 
+
+  %\author*[1]{Aaron Segal}
+  \author[1]{Names withheld}
+
+  %\author[2]{Bryan Ford}
+
+  %\author[3]{Joan Feigenbaum}
+
+  %\affil[1]{Yale Univ., E-mail: Aaron.Segal@yale.edu}
+  \affil[1]{Affiliations and email addresses withheld}
+
+  %\affil[2]{EPFL, E-mail: Bryan.Ford@epfl.ch}
+
+  %\affil[3]{Yale Univ., E-mail: Joan.Feigenbaum@yale.edu}
+
+  \title{\huge Open, privacy-preserving protocols for lawful surveillance}
+
+  \runningtitle{Privacy-preserving, lawful surveillance}
+
+  %\subtitle{...}
+
+  \begin{abstract}
+{As demonstrated, {\it e.g.}, by Snowden's revelation of controversial NSA 
+activity and by Apple's refusal to obey a Justice Department's order to break 
+an iPhone security mechanism, the question of how government agencies can
+acquire actionable, useful information about legitimate but unknown targets 
+without intruding upon the electronic activity of innocent parties is 
+extremely important.  We address this question by providing experimental
+evidence that actionable, useful information can indeed be obtained in a manner
+that preserves the privacy of innocent parties and that holds government
+agencies accountable.  In particular, we present practical, privacy-preserving
+protocols for two operations that law-enforcement and intelligence agencies
+have used effectively: {\it set intersection} and {\it contact chaining}.}
+  \end{abstract}
+  \keywords{Privacy, Secure multiparty computation, Surveillance}
+%  \classification[PACS]{}
+ % \communicated{...}
+ % \dedication{...}
+
+  \journalname{Proceedings on Privacy Enhancing Technologies}
+\DOI{Editor to enter DOI}
+  \startpage{1}
+  \received{February 29, 2016}
+  %\revised{..}
+  %\accepted{..}
+
+  \journalyear{2016}
+  \journalvolume{2016}
+  \journalissue{4}
+
+\maketitle
+
+\input{intro}
+\input{open}
+\input{intersection}
+\input{chaining}
+\input{related}
+\input{conc}
+%\input{acks}
+
+%% ###################################################################
+
+\begin{thebibliography}{99}
+%\bibitem{journal-1} A.~P.~Raposo, H.~J.~Weber, D.~E.~Alvarez--Castillo, M.~Kirchbach, Cent. Eur. J. Phys. 5, 253 (2007)
+%\bibitem{journal-2} J.~Barth et al. (SAPHIR Collaboration), Phys. Lett. B 572, 127 (2003)
+%\bibitem{journal-3} S.~Chekanov et al., Eur. Phys. J. C 51, 289 (2007)
+%\bibitem{journal-4} K.~Malarz, Postepy Fizyki 57, 235 (2006) (in Polish)
+%\bibitem{journal-5} G.~Meng, Cent. Eur. J. Phys., DOI:10.2478/s11534-007-0038-1
+%\bibitem{journal-6} R.~Hegselmann, U.~Krause, Journal of Artificial Societies and Social Simulation (2006), https://urldefense.proofpoint.com/v2/url?u=http-3A__jasss.soc.surrey.ac.uk_9_3_10.html&d=AwIGaQ&c=-dg2m7zWuuDZ0MUcV7Sdqw&r=TO0xacJWWmvm7m0roFn_liAsIL2PkxELeLGL8JNJXFw&m=Ka2FvolwqKNW8vu0FjJrZZz-0NBFnF_Zu-dQp-fjTto&s=370GY1pBTDyr9NSQToGqkNR8K-Xy1z0bsX64GpcLiPk&e= 
+%\bibitem{journal-7} A.~Dybala, Cent. Eur. J. Chem. (in press)
+%\bibitem{journal-8} A.~Dybala, Przeglad chemiczny (in Polish, in press)
+%\bibitem{book} M.~Lister, Fundamentals of Operating Systems, 3rd edition (Springer-Verlag, New York, 1984)
+%\bibitem{chapter} C.~K.~Clenshaw, K.~Lord, In: B.~K.~P.~Scaife (Ed.), Studies in Numerical Analysis (Academic Press, London and New York, 1974) 95
+%\bibitem{arxiv-1} M.~Majewski, K.~Malarz, arXiv:cond-mat/0609635v2 [cond-mat.stat-mech]
+%\bibitem{arxiv-2} J.~A.~C.~E.~Solano, arXiv:0707.1343v1 [astro-ph]
+\bibitem{sff-foci2014} A.~Segal, B.~Ford, J.~Feigenbaum, 
+In: J. Crandall and V. Paxson (Eds.), $4^{th}$ Workshop on Free and 
+Open Communications on the Internet, August 18, 2014, San Diego, 
+USA (USENIX, Berkeley, 2014)
+
+\bibitem{dissent} H.~Corrigan-Gibbs, B.~Ford, In: A.~D.~Keromytis and 
+V.~Shmatikov (Eds.), $17^{th}$ Conference on Computer and Communications 
+Security, Oct. 4-8, 2010, Chicago, USA (ACM, New York, 2010)
+
+\bibitem{verdict} H.~Corrigan-Gibbs, D.~I.~Wolinsky, and B.~Ford, In: 
+S.~King (Ed.), $22^{nd}$ Security Symposium, August 14-16, 2013, 
+Washington, D.C., USA (USENIX, Berkeley, 2013) 
+
+\bibitem{snapnets} J.~Leskovec and A.~Krevl, SNAP Datasets: 
+Stanford Large Network Dataset Collection, 
+http://snap.stanford.edu/data
+
+\bibitem{mobiforge} MobiForge, Global mobile statistics 2014 Part A: 
+Mobile subscribers; handset market share; mobile operators,\\ 
+https://mobiforge.com/research-analysis/global-mobile-\\
+statistics-2014-part-a-mobile-subscribers-handset-market-\\
+share-mobile-operators\#topmnos
+
+\bibitem{krwy-pnas16} M. Kearns, A. Roth, Z. S. Wu, G. Yaroslavtsev, 
+Proc.~Natl.~Acad.~Scis. 113, 913 (2016)
+
+%\bibitem{proceedings} A.~Kaczanowski, K.~Malarz, K.~Kulakowski, In: T.~E.~Simos (Ed.), International Conference of Computational Methods in Science and Engineering, Sep. 12-16, 2003, Kastoria, Greece (World Scientific, Singapore 2003) 258
+%\bibitem{thesis} A.~J.~Agutter, Ph.D. thesis, Edinburgh University (Edinburgh, UK, 1995)
+%\bibitem{newspaper-1} A.~Sherwin, The Times, Jul. 13, 2007, 1
+%\bibitem{newspaper-2} M.~Dzierzanowski, Wprost, Jul. 8, 2007, 18 (in Polish)
+%\bibitem{patent} Philip Morris Inc., European patent application 0021165 A1, Jan. 7, 1981
+%\bibitem{standard-1} ISO 2108:1992, Information and documentation --- International standard book numbering (ISBN)
+%\bibitem{standard-2} ISO/TR 9544:1988, Information processing --- Computer-assisted publishing --- Vocabulary
+\end{thebibliography}
+
+\end{document}
+
+
