@@ -1,16 +1,15 @@
 package nocrypto;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 public class OversightFinalResultsThread extends cc.CPUTrackingThread {
 
 	private OversightSocket oSocket;
-	private HashMap<Integer, BatchedTelecomResponse> prevResponses;
+	private BatchedTelecomResponse[] prevResponses;
 	private long oversightCpuTime = -1;
 
 	public OversightFinalResultsThread(OversightSocket oSocket,
-			HashMap<Integer, BatchedTelecomResponse> prevResponses) {
+			BatchedTelecomResponse[] prevResponses) {
 		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;

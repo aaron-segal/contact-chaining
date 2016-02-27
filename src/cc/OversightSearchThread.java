@@ -1,22 +1,20 @@
 package cc;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 public class OversightSearchThread extends CPUTrackingThread {
 
 	private OversightSocket oSocket;
-	private HashMap<Integer, SignedTelecomResponse> prevResponses;
-	private HashMap<Integer, byte[]> signatures = null;
+	private SignedTelecomResponse[] prevResponses;
+	private byte[][] signatures = null;
 
 	public OversightSearchThread(OversightSocket oSocket,
-			HashMap<Integer, SignedTelecomResponse> prevResponses) {
+			SignedTelecomResponse[] prevResponses) {
 		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void runReal() {
 		if (!oSocket.open) {
 			System.err.println("Error: Oversight socket " + oSocket.getAgencyId() + " is closed!");
@@ -28,7 +26,7 @@ public class OversightSearchThread extends CPUTrackingThread {
 			oSocket.writeObject(prevResponses);
 			// If the oversight agency is in sync with us, they will know what our
 			// final queries should look like, and sign them.
-			signatures = (HashMap<Integer, byte[]>) oSocket.readObject();
+			signatures = (byte[][]) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
 			oSocket.close();
@@ -39,7 +37,7 @@ public class OversightSearchThread extends CPUTrackingThread {
 	}
 
 	public byte[] getSignature(int telecomId){
-		return signatures.get(telecomId);
+		return signatures[telecomId];
 	}
 
 	public int getAgencyId(){

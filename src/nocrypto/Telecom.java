@@ -39,7 +39,6 @@ public class Telecom {
 	public static final String PUBLIC_KEYS = "PUBLICKEYS";
 	public static final String NUM_AGENCIES = "AGENCIES";
 	public static final String NUM_TELECOMS = "TELECOMS";
-	public static final String SIGNING_KEYPATH = "SIGKEYPATH";
 	public static final String MAX_THREADS = "MAXTHREADS";
 
 	private static void usage() {
@@ -146,14 +145,14 @@ public class Telecom {
 	}
 
 	private void sendResponse(TelecomResponse[] responses) throws IOException {
-		BatchedTelecomResponse signedTR = new BatchedTelecomResponse(responses, id);
+		BatchedTelecomResponse batchedTR = new BatchedTelecomResponse(responses, id);
 		// Add the cpu time from this thread plus all subthreads to this message.
 		long currentCpuTime = bean.getCurrentThreadCpuTime();
 		long cpuTimeToSend = data.getCpuTime() +
 				(currentCpuTime - lastCpuRecording);
 		lastCpuRecording = currentCpuTime;
-		signedTR.setCpuTime(cpuTimeToSend);
-		outputStream.writeObject(signedTR);
+		batchedTR.setCpuTime(cpuTimeToSend);
+		outputStream.writeObject(batchedTR);
 		outputStream.flush();
 	}
 
@@ -175,16 +174,16 @@ public class Telecom {
 				// thread for this, because we only ever expect to have one
 				// connection at a time.
 				while (true) {
-					BatchedTelecomRecord signedTC =
+					BatchedTelecomRecord batchedRecord =
 							(BatchedTelecomRecord) inputStream.readObject();
 
 					// Update maxDegree if we don't already know it
 					if (data.getMaxDegree() == Integer.MAX_VALUE &&
-							signedTC.getMaxDegree() > 0) {
-						data.setMaxDegree(signedTC.getMaxDegree());
+							batchedRecord.getMaxDegree() > 0) {
+						data.setMaxDegree(batchedRecord.getMaxDegree());
 					}
-					sendResponse(data.queryResponse(signedTC.getRecords(),
-							signedTC.getType()));
+					sendResponse(data.queryResponse(batchedRecord.getRecords(),
+							batchedRecord.getType()));
 				}
 			} catch (IOException e) {
 				System.err.println("Connection lost. Waiting for new connection");

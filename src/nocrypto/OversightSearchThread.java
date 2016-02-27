@@ -1,16 +1,15 @@
 package nocrypto;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 public class OversightSearchThread extends cc.CPUTrackingThread {
 
 	private OversightSocket oSocket;
-	private HashMap<Integer, BatchedTelecomResponse> prevResponses;
+	private BatchedTelecomResponse[] prevResponses;
 	private boolean isOkay;
 
 	public OversightSearchThread(OversightSocket oSocket,
-			HashMap<Integer, BatchedTelecomResponse> prevResponses) {
+			BatchedTelecomResponse[] prevResponses) {
 		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;
@@ -26,7 +25,7 @@ public class OversightSearchThread extends cc.CPUTrackingThread {
 			// telecom so they can stay in sync with us.
 			oSocket.writeObject(prevResponses);
 			// If the oversight agency is in sync with us, they will know what our
-			// final queries should look like, and sign them.
+			// final queries should look like, and okay them.
 			isOkay = (boolean) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();

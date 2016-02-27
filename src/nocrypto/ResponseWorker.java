@@ -26,7 +26,7 @@ public class ResponseWorker extends cc.CPUTrackingThread {
 	 * Creates TelecomResponses for each TelecomRecord received, starting
 	 * from startIndex until either itemsToDo items have been converted,
 	 * or the end of the array is reached. 
-	 * Duplicate items will appear as null agency ciphertexts.
+	 * Duplicate items will appear as null agency records.
 	 */
 	public void runReal() {
 		for (int i = startIndex; i - startIndex < itemsToDo &&
@@ -48,7 +48,7 @@ public class ResponseWorker extends cc.CPUTrackingThread {
 				continue;
 			}
 
-			// Otherwise, we need to provide telecom ciphertexts for all neighbors.
+			// Otherwise, we need to provide telecom records for all neighbors.
 			int[] neighbors = data.getNeighbors(userId);
 			TelecomRecord[] neighborRecords =
 					new TelecomRecord[neighbors.length];

@@ -46,7 +46,7 @@ public class TelecomResponse implements Serializable {
 	}
 
 	/**
-	 * @return the telecomCiphertexts
+	 * @return the telecomRecords
 	 */
 	public TelecomRecord[] getTelecomRecords() {
 		return telecomRecords;

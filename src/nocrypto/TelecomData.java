@@ -107,7 +107,7 @@ public class TelecomData {
 		currentResponses = new TelecomResponse[currentRecords.length];
 		int threads = Math.min(currentRecords.length, maxThreads);
 		int itemsPerThread = (currentRecords.length + threads - 1) / threads;
-		// Compute TelecomResponses to TelecomCiphertexts in threads
+		// Compute TelecomResponses to TelecomRecords in threads
 		ResponseWorker[] workers = new ResponseWorker[threads];
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new ResponseWorker(this, itemsPerThread * i, 

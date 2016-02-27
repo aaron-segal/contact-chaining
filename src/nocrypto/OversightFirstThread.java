@@ -23,10 +23,10 @@ public class OversightFirstThread extends cc.CPUTrackingThread {
 			oSocket.writeInt(oSocket.lAgency.getTargetId());
 			oSocket.open = true;
 
-			// Send the signed telecom ciphertext to the oversight agency
+			// Send the batched telecom ciphertext to the oversight agency
 			oSocket.writeObject(stc);
 
-			// Read the new signature back
+			// Read the OK
 			isOkay = (boolean) oSocket.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();

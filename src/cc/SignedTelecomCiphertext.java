@@ -1,7 +1,6 @@
 package cc;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 public class SignedTelecomCiphertext implements Serializable {
 
@@ -22,20 +21,21 @@ public class SignedTelecomCiphertext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private QueryType type;
 	private TelecomCiphertext[] telecomCiphertexts;
-	private HashMap<Integer, byte[]> signatures;
+	// Agency ID x will be in signatures[-x-1]
+	private byte[][] signatures;
 	// The maximum degree of users that agencies care about. Ignored if 0.
 	private int maxDegree = 0;
 
-	public SignedTelecomCiphertext(TelecomCiphertext telecomCiphertext) {
+	public SignedTelecomCiphertext(TelecomCiphertext telecomCiphertext, int numAgencies) {
 		telecomCiphertexts = new TelecomCiphertext[1];
 		telecomCiphertexts[0] = telecomCiphertext;
-		signatures = new HashMap<Integer, byte[]>();
+		signatures = new byte[numAgencies][];
 		type = QueryType.SEARCH;
 	}
 
-	public SignedTelecomCiphertext(TelecomCiphertext[] telecomCiphertexts) {
+	public SignedTelecomCiphertext(TelecomCiphertext[] telecomCiphertexts, int numAgencies) {
 		this.telecomCiphertexts = telecomCiphertexts;
-		signatures = new HashMap<Integer, byte[]>();
+		signatures = new byte[numAgencies][];
 		type = QueryType.SEARCH;
 	}
 
@@ -61,15 +61,15 @@ public class SignedTelecomCiphertext implements Serializable {
 	 * @param signature
 	 */
 	public void addSignature(int id, byte[] signature) {
-		signatures.put(id, signature);
+		signatures[-id-1] = signature;
 	}
 
 	/**
-	 * 
-	 * @return All signatures on the ciphertexts.
+	 * @param agencyId The agency whose signature we want
+	 * @return That agency's signature, if present.
 	 */
-	public HashMap<Integer, byte[]> getSignatures() {
-		return signatures;
+	public byte[] getSignature(int agencyId) {
+		return signatures[-agencyId-1];
 	}
 
 	/**

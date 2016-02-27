@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 
 public class OversightAgency extends Agency {
 
@@ -66,11 +65,13 @@ public class OversightAgency extends Agency {
 	private boolean readResponseFromLeader(int distance)
 			throws ClassNotFoundException, IOException {
 		// Read, verify, and process the response of the previous telecom.
-		@SuppressWarnings("unchecked")
-		HashMap<Integer, SignedTelecomResponse> signedResponses =
-		(HashMap<Integer, SignedTelecomResponse>) leaderIStream.readObject();
-		for (int telecomId : signedResponses.keySet()) {
-			SignedTelecomResponse signedResponse = signedResponses.get(telecomId);
+		SignedTelecomResponse[] signedResponses =
+				(SignedTelecomResponse[]) leaderIStream.readObject();
+		for (int telecomId = 0; telecomId < numTelecoms; telecomId++) {
+			if (signedResponses[telecomId] == null) {
+				continue;
+			}
+			SignedTelecomResponse signedResponse = signedResponses[telecomId];
 			if (!keys.verify(signedResponse)) {
 				// If we failed to verify the signature, complain bitterly and quit.
 				System.err.println("Failed to verify a signature on a response from "
@@ -86,9 +87,14 @@ public class OversightAgency extends Agency {
 		if (distance == 0) {
 			// There is only one SignedTelecomReponse with one TelecomResponse in
 			// it, in this case.
-			int initialOwner = signedResponses.keySet().iterator().next();
-			targetDegree = signedResponses.get(initialOwner).
-					getTelecomResponses()[0].getTelecomCiphertexts().length;
+			int initialOwner;
+			for (initialOwner = 0; initialOwner < numTelecoms; initialOwner++) {
+				if (signedResponses[initialOwner] != null) {
+					break;
+				}
+			}
+			targetDegree = signedResponses[initialOwner].getTelecomResponses()[0].
+					getTelecomCiphertexts().length;
 		}
 		return true;
 	}
@@ -122,9 +128,16 @@ public class OversightAgency extends Agency {
 			// a telecom.
 			SignedTelecomCiphertext signedTC =
 					(SignedTelecomCiphertext) leaderIStream.readObject();
-			//There should be only one signature so far, with the leader's id
-			int leaderId = signedTC.getSignatures().keySet().iterator().next();
-			if (!keys.verify(leaderId, signedTC)) {
+			// There should be only one signature so far, with the leader's id.
+			// We need to determine which id this is.
+			int leaderId;
+			// Agency ids go from -1 to -(numAgencies), hence this weird loop
+			for (leaderId = -1; leaderId >= -numAgencies; leaderId--) {
+				if (signedTC.getSignature(leaderId) != null) {
+					break;
+				}
+			}
+			if (leaderId < -numAgencies || !keys.verify(leaderId, signedTC)) {
 				println("Failure: Investigating agency's signature (ID " + leaderId + ") does not verify!");
 				return;
 			}
@@ -154,9 +167,9 @@ public class OversightAgency extends Agency {
 				println("Remaining in queue: " + ciphertextsRemaining());
 				// Look at what the next query to the telecoms should be and give
 				// the leader a signature on those telecom ciphertexts.
-				HashMap<Integer, byte[]> signatures = new HashMap<Integer, byte[]>();
+				byte[][] signatures = new byte[numTelecoms][];
 				for (int telecomId : investigationLists.keySet()) {
-					signatures.put(telecomId, keys.sign(getCiphertexts(telecomId)));
+					signatures[telecomId] = keys.sign(getCiphertexts(telecomId));
 				}
 				leaderOStream.writeObject(signatures);
 				leaderOStream.flush();

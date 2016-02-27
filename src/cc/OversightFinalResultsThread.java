@@ -1,16 +1,15 @@
 package cc;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 public class OversightFinalResultsThread extends CPUTrackingThread {
 
 	private OversightSocket oSocket;
-	private HashMap<Integer, SignedTelecomResponse> prevResponses;
+	private SignedTelecomResponse[] prevResponses;
 	private long oversightCpuTime = -1;
 
 	public OversightFinalResultsThread(OversightSocket oSocket,
-			HashMap<Integer, SignedTelecomResponse> prevResponses) {
+			SignedTelecomResponse[] prevResponses) {
 		super();
 		this.oSocket = oSocket;
 		this.prevResponses = prevResponses;

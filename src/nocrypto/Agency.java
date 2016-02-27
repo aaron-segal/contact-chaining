@@ -215,20 +215,20 @@ public abstract class Agency {
 	}
 
 	/**
-	 * Returns, in array form, all known telecom ciphertexts for a given telecom.
-	 * @param owner The telecom we want ciphertexts for
+	 * Returns, in array form, all known telecom records for a given telecom.
+	 * @param owner The telecom we want records for
 	 * @return An array of TelecomRecords for that telecom
 	 */
-	protected TelecomRecord[] getCiphertexts(int owner) {
-		TelecomRecord[] ciphertexts = new TelecomRecord[0];
-		ciphertexts = investigationLists.get(owner).toArray(ciphertexts);
-		return ciphertexts;
+	protected TelecomRecord[] getRecords(int owner) {
+		TelecomRecord[] records = new TelecomRecord[0];
+		records = investigationLists.get(owner).toArray(records);
+		return records;
 	}
 
 	/**
-	 * @return the number of telecom ciphertexts in investigationLists
+	 * @return the number of telecom records in investigationLists
 	 */
-	protected int ciphertextsRemaining() {
+	protected int recordsRemaining() {
 		int total = 0;
 		for (ArrayList<TelecomRecord> list : investigationLists.values()) {
 			total += list.size();
@@ -245,7 +245,7 @@ public abstract class Agency {
 				println(telecomResponse.getTelecomRecords().length +
 						" not added to queue. Maximum path length reached");
 			} else if (distance == maxDistance) {
-				println("No ciphertexts added to queue. Maximum path length reached");
+				println("No records added to queue. Maximum path length reached");
 			} else if (telecomResponse.getTelecomRecords().length > maxDegree &&
 					distance > 0){
 				println(telecomResponse.getTelecomRecords().length +
@@ -361,8 +361,8 @@ public abstract class Agency {
 
 
 	/**
-	 * Saves the output agency ciphertexts to a file if a filename is specified,
-	 * or else just prints the number of agency ciphertexts that would have been
+	 * Saves the output agency records to a file if a filename is specified,
+	 * or else just prints the number of agency records that would have been
 	 * saved to file.
 	 * This prints something even if quiet mode is turned on. 
 	 */
@@ -387,7 +387,7 @@ public abstract class Agency {
 			}
 			bw.flush();
 			bw.close();
-			println("Wrote agency ciphertexts to " + config.getProperty(OUTPUT_PATH));
+			println("Wrote agency records to " + config.getProperty(OUTPUT_PATH));
 		} catch (IOException e) {
 			System.err.println("Couldn't write to file " + config.getProperty(OUTPUT_PATH) + "!");
 			e.printStackTrace();

@@ -106,7 +106,8 @@ public class LeaderAgency extends Agency {
 
 		// Search on the first telecom ciphertext. It is different from the others
 		// because it does not have a telecom signature.
-		SignedTelecomCiphertext firstSignedTC =	new SignedTelecomCiphertext(startTCT);
+		SignedTelecomCiphertext firstSignedTC =
+				new SignedTelecomCiphertext(startTCT, numAgencies);
 		firstSignedTC.addSignature(id, keys.sign(firstSignedTC.getCiphertexts()));
 		OversightFirstThread[] firstThreads = new OversightFirstThread[oversight.length];
 		for (int i = 0; i < firstThreads.length; i++) {
@@ -129,13 +130,13 @@ public class LeaderAgency extends Agency {
 		// general loop because we will not care about the degree of this first
 		// vertex.
 		connectTelecom(initialOwner);
-		HashMap<Integer, SignedTelecomResponse> prevResponses =
-				new HashMap<Integer, SignedTelecomResponse>();
+		SignedTelecomResponse[] prevResponses =
+				new SignedTelecomResponse[numTelecoms];
 		try {
 			writeObjectToTelecom(initialOwner, firstSignedTC);
 			SignedTelecomResponse firstSignedResponse =
 					(SignedTelecomResponse) readObjectFromTelecom(initialOwner);
-			prevResponses.put(initialOwner, firstSignedResponse);
+			prevResponses[initialOwner] = firstSignedResponse;
 			recordTelecomCpuTime(firstSignedResponse.getCpuTime());
 			TelecomResponse telecomResponse = firstSignedResponse.getTelecomResponses()[0];
 			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
@@ -168,7 +169,8 @@ public class LeaderAgency extends Agency {
 			nextSignedTCs = new HashMap<Integer, SignedTelecomCiphertext>();
 			for (int telecomId : investigationLists.keySet()) {
 				TelecomCiphertext[] ciphertexts = getCiphertexts(telecomId);
-				nextSignedTCs.put(telecomId, new SignedTelecomCiphertext(ciphertexts));
+				nextSignedTCs.put(telecomId,
+						new SignedTelecomCiphertext(ciphertexts, numAgencies));
 				if (distance == maxDistance) {
 					nextSignedTCs.get(telecomId).setType(QueryType.CONCLUDE);
 				}
@@ -218,15 +220,15 @@ public class LeaderAgency extends Agency {
 
 			// Receive responses from telecoms
 			investigationLists.clear();
-			prevResponses.clear();
+			prevResponses = new SignedTelecomResponse[numTelecoms];
 			for (int telecomId : nextSignedTCs.keySet()) {
 				try {
 					SignedTelecomResponse prevResponse = (SignedTelecomResponse)
 							readObjectFromTelecom(telecomId);
 					recordTelecomCpuTime(prevResponse.getCpuTime());
-					prevResponses.put(telecomId, prevResponse);
+					prevResponses[telecomId] = prevResponse;
 					TelecomResponse[] telecomResponses =
-							prevResponses.get(telecomId).getTelecomResponses();
+							prevResponses[telecomId].getTelecomResponses();
 					for (TelecomResponse telecomResponse : telecomResponses) {
 						processTelecomResponse(telecomResponse, distance);
 					}

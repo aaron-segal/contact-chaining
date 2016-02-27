@@ -267,7 +267,7 @@ public abstract class Keys {
 	 */
 	public boolean verify(int signerId, SignedTelecomCiphertext signedTC) {
 		Signature verifier = verifiers.get(signerId);
-		byte[] signature = signedTC.getSignatures().get(signerId);
+		byte[] signature = signedTC.getSignature(signerId);
 		if (signature == null) {
 			return false;
 		}

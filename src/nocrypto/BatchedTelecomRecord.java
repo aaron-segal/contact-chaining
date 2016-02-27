@@ -6,10 +6,10 @@ public class BatchedTelecomRecord implements Serializable {
 
 	/**
 	 * There are two kinds of messages.
-	 * SEARCH messages have one telecom ciphertext. In response, we want a
-	 * corresponding agency ciphertext and telecom ciphertexts for the neighbors.
-	 * CONCLUDE messages have many telecom ciphertexts. In response, we want
-	 * corresponding agency ciphertexts, but don't care about neighbors.
+	 * SEARCH messages have one telecom record. In response, we want a
+	 * corresponding agency record and telecom records for the neighbors.
+	 * CONCLUDE messages have many telecom records. In response, we want
+	 * corresponding agency records, but don't care about neighbors.
 	 * @author Aaron Segal
 	 *
 	 */

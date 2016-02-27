@@ -105,12 +105,11 @@ public class LeaderAgency extends Agency {
 		investigationLists.put(initialOwner, new ArrayList<TelecomRecord>());
 		TelecomRecord startTCT = new TelecomRecord(targetId, initialOwner);
 
-		// Search on the first telecom ciphertext. It is different from the others
-		// because it does not have a telecom signature.
-		BatchedTelecomRecord firstSignedTC =	new BatchedTelecomRecord(startTCT);
+		// Search on the first telecom record.
+		BatchedTelecomRecord firstBatchedRecord = new BatchedTelecomRecord(startTCT);
 		OversightFirstThread[] firstThreads = new OversightFirstThread[oversight.length];
 		for (int i = 0; i < firstThreads.length; i++) {
-			firstThreads[i] = new OversightFirstThread(oversight[i], firstSignedTC);
+			firstThreads[i] = new OversightFirstThread(oversight[i], firstBatchedRecord);
 			firstThreads[i].start();
 		}
 		for (OversightFirstThread oft : firstThreads) {
@@ -124,19 +123,19 @@ public class LeaderAgency extends Agency {
 
 		println("Got first request for telecom ready to go.");
 
-		// Get response for the first telecom ciphertext. This is different from the
+		// Get response for the first telecom record. This is different from the
 		// general loop because we will not care about the degree of this first
 		// vertex.
 		connectTelecom(initialOwner);
-		HashMap<Integer, BatchedTelecomResponse> prevResponses =
-				new HashMap<Integer, BatchedTelecomResponse>();
+		BatchedTelecomResponse[] prevResponses =
+				new BatchedTelecomResponse[numTelecoms];
 		try {
-			writeObjectToTelecom(initialOwner, firstSignedTC);
-			BatchedTelecomResponse firstSignedResponse =
+			writeObjectToTelecom(initialOwner, firstBatchedRecord);
+			BatchedTelecomResponse firstBatchedResponse =
 					(BatchedTelecomResponse) readObjectFromTelecom(initialOwner);
-			prevResponses.put(initialOwner, firstSignedResponse);
-			recordTelecomCpuTime(firstSignedResponse.getCpuTime());
-			TelecomResponse telecomResponse = firstSignedResponse.getTelecomResponses()[0];
+			prevResponses[initialOwner] = firstBatchedResponse;
+			recordTelecomCpuTime(firstBatchedResponse.getCpuTime());
+			TelecomResponse telecomResponse = firstBatchedResponse.getTelecomResponses()[0];
 			if (telecomResponse.getMsgType() ==	TelecomResponse.MsgType.DATA) {
 				processTelecomResponse(telecomResponse, 0);
 				// Store degree of target for timing data
@@ -158,22 +157,22 @@ public class LeaderAgency extends Agency {
 		// Remember that we still need to tell the first telecom about maxDegree.
 		// It is already in the list of known telecoms so we won't do this otherwise.
 		boolean needToInformInitialOwner = true;
-		HashMap<Integer, BatchedTelecomRecord> nextSignedTCs;
+		HashMap<Integer, BatchedTelecomRecord> nextBatchedTCs;
 
 		// We have the first responses we need to start investigating the graph.
 		// We are ready to enter the main loop.
 		for (int distance = 1; distance <= maxDistance; distance++) {
-			println("Remaining in queue: " + ciphertextsRemaining());
-			nextSignedTCs = new HashMap<Integer, BatchedTelecomRecord>();
+			println("Remaining in queue: " + recordsRemaining());
+			nextBatchedTCs = new HashMap<Integer, BatchedTelecomRecord>();
 			for (int telecomId : investigationLists.keySet()) {
-				TelecomRecord[] ciphertexts = getCiphertexts(telecomId);
-				nextSignedTCs.put(telecomId, new BatchedTelecomRecord(ciphertexts));
+				TelecomRecord[] records = getRecords(telecomId);
+				nextBatchedTCs.put(telecomId, new BatchedTelecomRecord(records));
 				if (distance == maxDistance) {
-					nextSignedTCs.get(telecomId).setType(QueryType.CONCLUDE);
+					nextBatchedTCs.get(telecomId).setType(QueryType.CONCLUDE);
 				}
 			}
 
-			// Get signatures from other oversight agencies
+			// Get OKs from other oversight agencies
 			OversightSearchThread[] searchThreads = new OversightSearchThread[oversight.length];
 			for (int i = 0; i < searchThreads.length; i++) {
 				searchThreads[i] = new OversightSearchThread(oversight[i], prevResponses);
@@ -189,20 +188,20 @@ public class LeaderAgency extends Agency {
 			}
 
 			// Send requests to telecoms
-			for (int telecomId : nextSignedTCs.keySet()) {
-				BatchedTelecomRecord nextSignedTC = nextSignedTCs.get(telecomId);
+			for (int telecomId : nextBatchedTCs.keySet()) {
+				BatchedTelecomRecord nextBatchedTC = nextBatchedTCs.get(telecomId);
 				println("Sending request for " +
-						nextSignedTC.getRecords().length +
+						nextBatchedTC.getRecords().length +
 						" users to telecom " + telecomId + "...");
 				if (!telecoms.containsKey(telecomId)) {
 					connectTelecom(telecomId);
-					nextSignedTC.setMaxDegree(maxDegree);
+					nextBatchedTC.setMaxDegree(maxDegree);
 				} else if (needToInformInitialOwner && telecomId == initialOwner) {
-					nextSignedTC.setMaxDegree(maxDegree);
+					nextBatchedTC.setMaxDegree(maxDegree);
 					needToInformInitialOwner = false;
 				}
 				try {
-					writeObjectToTelecom(telecomId, nextSignedTC);
+					writeObjectToTelecom(telecomId, nextBatchedTC);
 				} catch (IOException e) {
 					System.err.println("Error in connection with telecom " + telecomId);
 					e.printStackTrace();
@@ -212,15 +211,15 @@ public class LeaderAgency extends Agency {
 
 			// Receive responses from telecoms
 			investigationLists.clear();
-			prevResponses.clear();
-			for (int telecomId : nextSignedTCs.keySet()) {
+			prevResponses = new BatchedTelecomResponse[numTelecoms];
+			for (int telecomId : nextBatchedTCs.keySet()) {
 				try {
 					BatchedTelecomResponse prevResponse = (BatchedTelecomResponse)
 							readObjectFromTelecom(telecomId);
 					recordTelecomCpuTime(prevResponse.getCpuTime());
-					prevResponses.put(telecomId, prevResponse);
+					prevResponses[telecomId] = prevResponse;
 					TelecomResponse[] telecomResponses =
-							prevResponses.get(telecomId).getTelecomResponses();
+							prevResponses[telecomId].getTelecomResponses();
 					for (TelecomResponse telecomResponse : telecomResponses) {
 						processTelecomResponse(telecomResponse, distance);
 					}
