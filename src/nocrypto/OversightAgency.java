@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
@@ -163,6 +164,16 @@ public class OversightAgency extends Agency {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return;
+		}
+		// Attempt to read FIN, but if connection breaks first then just ignore it.
+		try {
+			leaderIStream.readObject();
+		} catch (SocketException e) {
+			// This is expected; do nothing.
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 

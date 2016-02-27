@@ -28,6 +28,7 @@ public class OversightFinalResultsThread extends cc.CPUTrackingThread {
 			// If the everything has gone perfect, the oversight agency should send
 			// us a True.
 			oversightCpuTime = oSocket.readLong();
+			oSocket.writeObject(true); // FIN
 		} catch (IOException e) {
 			e.printStackTrace();
 			oSocket.close();
