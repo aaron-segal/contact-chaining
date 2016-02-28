@@ -13,11 +13,11 @@ Despite this risk, we recognize the potential law-enforcement value of informati
 
 \subsection{Protocols For Privacy-Preserving Contact Chaining}
 
-\label{sec:proto}
+\label{sec-proto}
 
 
 
-%This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in sections \ref{sec:proto1} and \ref{sec:proto2}.
+%This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in sections \ref{sec-proto1} and \ref{sec-proto2}.
 
 
 
@@ -33,11 +33,13 @@ The telecoms jointly hold an undirected contact graph $G=(V,E)$. Each telecom kn
 
 
 
-The agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $d$). $x$ is a target phone number. We assume, since $x$ belongs to a user targeted by the agencies, that they also know which telecom serves $x$. $k$ is a (small) distance from $x$, the distance at which the agencies wish to consider chained contacts. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$. Therefore, the warrant also includes $d$, an upper bound on the degree of users the agencies are willing to ``chain'' through. If a phone number has more than $d$ contacts, then the agencies do not consider paths to other users through that phone number in their search. The agencies disregard $d$ for the initial target $x$, however.
+The agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $d$). $x$ is a target phone number. We assume, since $x$ belongs to a user targeted by the agencies, that they also know which telecom serves $x$. $k$ is a (small) distance from $x$, the distance at which the agencies wish to consider chained contacts. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$.
 
+We can assume that business phone numbers have many more contacts than personal phone numbers do. In most cases, knowing that two individuals have contacted the same business phone number does not indicate that those individuals have a personal relationship. Therefore, the warrant also includes $d$, an upper bound on the degree of users the agencies are willing to ``chain'' through. If a phone number has more than $d$ contacts, then the agencies do not consider paths to other users through that phone number in their search. The agencies disregard $d$ for the initial target $x$, however. The high-degree users themselves will also be present in the agencies' outputs.
 
+This provides a reasonable limit to the scope of the investigation and hides what are very likely to be untargeted users from the government. In the uncommon scenario where a business number with many contacts also functions as a front or hub for a criminal organization to be revealed, the government is still able to conduct further investigation on it, perhaps even beginning a new contact-chaining search with that number as the initial target.
 
-We specify the protocol in full in sections~\ref{sec:proto1} and \ref{sec:proto2}.
+We specify the protocol in full in sections~\ref{sec-proto1} and \ref{sec-proto2}.
 
 
 
@@ -81,7 +83,7 @@ Below, we present two versions of our protocol. In the first version, the agenci
 
 
 
-In section \ref{sec:proto2}, we will present a second version of the protocol in which the agency \emph{does not} learn which telecom serves which encrypted phone number.
+In section \ref{sec-proto2}, we will present a second version of the protocol in which the agency \emph{does not} learn which telecom serves which encrypted phone number.
 
 
 
@@ -91,7 +93,7 @@ As long as all parties honestly follow the protocol, the agencies collectively l
 
 \subsubsection{Ownership-Revealing Lawful Contact-Chaining Protocol}
 
-\label{sec:proto1}
+\label{sec-proto1}
 
 
 
@@ -161,7 +163,7 @@ For the sake of efficiency, it is worth noting that the inner loop can be execut
 
 \subsubsection{Ownership-Hiding Lawful Contact-Chaining Protocol}
 
-\label{sec:proto2}
+\label{sec-proto2}
 
 
 
@@ -177,7 +179,7 @@ We can use an anonymity protocol to allow the correct telecom to respond anonymo
 
 
 
-Now we can present the following modified protocol. This protocol uses the same data structures as in section~\ref{sec:proto1}, except that $\mathbf{Q}$ now contains pairs $(\Enc_{T(a)}(a), j)$ for unexplored vertices $a$ (omitting the identity of $T(a)$.
+Now we can present the following modified protocol. This protocol uses the same data structures as in section~\ref{sec-proto1}, except that $\mathbf{Q}$ now contains pairs $(\Enc_{T(a)}(a), j)$ for unexplored vertices $a$ (omitting the identity of $T(a)$.
 
 
 
@@ -221,7 +223,7 @@ Now we can present the following modified protocol. This protocol uses the same 
 
 
 
-The protocol replaces each query in the protocol of section~\ref{sec:proto1} with broadcast of the telecom ciphertext to all telecoms, and replaces each response with a round of the anonymity protocol. This allows the telecom that owns each phone number to respond with appropriate information about the phone number, but shields the telecom's identity from the agencies (and incidentally from other telecoms).
+The protocol replaces each query in the protocol of section~\ref{sec-proto1} with broadcast of the telecom ciphertext to all telecoms, and replaces each response with a round of the anonymity protocol. This allows the telecom that owns each phone number to respond with appropriate information about the phone number, but shields the telecom's identity from the agencies (and incidentally from other telecoms).
 
 
 
@@ -243,7 +245,7 @@ We now take a moment to discuss the correctness and privacy properties of both v
 
 
 
-If all parties behave in an honest or honest-but-curious way in following to the protocols above, then the agencies' outputs will be $\mathbf{C}$. $\mathbf{C}$ will contain agency ciphertexts of all phone numbers at most $k$ phone calls away from $x$, considering only vertices of degree at most $d$. This is the desired output. $C$ reveals nothing to any agencies unless they all provide their decryption keys. To continue the process of lawful investigation, the agencies should combine the output $\mathbf{C}$ with other sets of potential suspects (such as from further runs of this protocol, or from cell tower dumps) in a lawful intersection protocol.
+The agencies' outputs from the protocols in sections~\ref{sec-proto1} and \ref{sec-proto2} will be $\mathbf{C}$. $\mathbf{C}$ will contain agency ciphertexts of all phone numbers at most $k$ phone calls away from $x$, considering only vertices of degree at most $d$. This is the desired output. $C$ reveals nothing to any agencies unless they all provide their decryption keys. To continue the process of lawful investigation, the agencies should combine the output $\mathbf{C}$ with other sets of potential suspects (such as from further runs of this protocol, or from cell tower dumps) in a lawful intersection protocol.
 
 
 
@@ -255,7 +257,7 @@ Both versions of the protocol hide the identities of the chained contacts of $x$
 
 
 
-The protocol of section~\ref{sec:proto1} allows the agencies to learn which telecoms owns which ciphertexts in $\mathbf{C}$. This may be a security concern, since some telecoms are relatively small, specialized, or localized to a particular country or region. If the agencies know that such a such a telecom owns an encrypted phone number, this will not allow them to identify the phone number itself, but might convince the agencies to subject that ciphertext to additional scrutiny, up to the point of decrypting it outside the context of lawful surveillance. This would still require the collusion of all agencies, however. Our revised protocol mitigates this concern. Assuming that the anonymity protocol used in section~\ref{sec:proto2} does not allow its participants to learn who sends each message, then the revised protocol does not leak ciphertext ownership information.
+The protocol of section~\ref{sec-proto1} allows the agencies to learn which telecoms owns which ciphertexts in $\mathbf{C}$. This may be a security concern, since some telecoms are relatively small, specialized, or localized to a particular country or region. If the agencies know that such a such a telecom owns an encrypted phone number, this will not allow them to identify the phone number itself, but might convince the agencies to subject that ciphertext to additional scrutiny, up to the point of decrypting it outside the context of lawful surveillance. This would still require the collusion of all agencies, however. Our revised protocol mitigates this concern. Assuming that the anonymity protocol used in section~\ref{sec-proto2} does not allow its participants to learn who sends each message, then the revised protocol does not leak ciphertext ownership information.
 
 
 
@@ -273,7 +275,7 @@ In both versions of our protocol, the telecoms learn which of their numbers have
 
 
 
-We may point out nevertheless that a modification of our protocol from \ref{sec:proto1} could allow the agencies to hide from the telecoms which of their clients is being surveilled. The telecoms would need to precompute agency ciphertexts for all of their client numbers, and telecom ciphertexts for all of their clients' contacts. With these precomputed databases, the telecoms could then use oblivious transfer to blindly serve the agencies' requests for information about their clients.
+We may point out nevertheless that a modification of our protocol from \ref{sec-proto1} could allow the agencies to hide from the telecoms which of their clients is being surveilled. The telecoms would need to precompute agency ciphertexts for all of their client numbers, and telecom ciphertexts for all of their clients' contacts. With these precomputed databases, the telecoms could then use oblivious transfer to blindly serve the agencies' requests for information about their clients.
 
 
 
@@ -281,7 +283,7 @@ We may point out nevertheless that a modification of our protocol from \ref{sec:
 
 \label{sec:implementation}
 
-We implemented the privacy-preserving contact chaining search protocol of~\ref{sec:proto1} in Java and tested the implementation's running time, CPU time used, and data sent over the network. Below, we describe our implementation and its experimental setup, and then summarize our results.
+We implemented the privacy-preserving contact chaining search protocol of~\ref{sec-proto1} in Java and tested the implementation's running time, CPU time used, and data sent over the network. Below, we describe our implementation and its experimental setup, and then summarize our results.
 
 \subsubsection{Java Implementation}
 
@@ -313,7 +315,7 @@ These results are important in evaluating how practical our lawful contact-chain
 
 \subsubsection{Results}
 
-%Adding additional line breaks to this section will interfere with the formatting.
+%NOTE: Adding blank lines to this environment will interfere with the formatting.
 \begin{figure*}[t]
 \centering
 \begin{subfigure}{0.66\columnwidth}
