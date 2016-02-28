@@ -49,3 +49,8 @@ tests/lognorm/~$*.xlsx
 paper/submission.pdf
 *.aux
 paper/submission.idx
+*.dep
+*.dpth
+*.auxlock
+*.md5
+*.idx

@@ -115,8 +115,38 @@ Figure~\ref{fig:isectgraph}.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.99\columnwidth]{intersectionchart.pdf}
+\begin{tikzpicture}
+\begin{loglogaxis}[
+	title={Parallel vs. Sequential Running Time},
+	xlabel={Total Set Size [Ciphertexts]},
+	ylabel={Running Time [min]},
+	xmin=10, xmax=200000,
+	ymin=0.01, ymax=1000,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+]
+
+\addplot[
+	color=blue,
+	mark=o,
+	]
+	table [x=Items, y=Parallel, col sep=comma] {intersection.csv};
+	
+\addplot[
+	color=red,
+	mark=square,
+	]
+	table [x=Items, y=Sequential, col sep=comma] {intersection.csv};
+
+\legend{Parallel, Sequential}
+\end{loglogaxis}
+\end{tikzpicture}
+\captionsetup{justification=centering}
 \caption{Comparison of Lawful Intersection Performance}
 \label{fig:isectgraph}
 \end{figure}
-
