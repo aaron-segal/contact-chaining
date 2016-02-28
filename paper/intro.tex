@@ -1,4 +1,4 @@
-\section{Introduction}
+\section{Introduction}\label{sec-introduction}
 As networked devices become more available, more capable, and more ubiquitous
 in everyday life, tension mounts between users' desire to safeguard their 
 personal information and government agencies' desire to use that personal 
@@ -14,7 +14,7 @@ assert that, by deploying appropriate security technology in the context of
 sound policy and the rule of law, we can have both user privacy and effective 
 law enforcement and intelligence.
 
-Continuing the approach taken by Segal {\it et al.}~\cite{sff-foci2014}, we
+Adopting the approach taken by Segal {\it et al.}~\cite{sff-foci2014}, we
 seek to design and implement protocols for {\it accountable surveillance}.
 We require that government surveillance be conducted according to {\it open
 processes}, as defined in Section~\ref{sec-open} below, and that the privacy
@@ -41,6 +41,32 @@ it runs for approximately 10.5 minutes on the test instance of 150,000 users.
 
 In Section~\ref{sec-chaining}, we turn our attention to 
 accountable-surveillance protocols for contact chaining.
+The goal of contact chaining is to use the topology of a {\it communication 
+graph} ({\it e.g.}, a phone-call graph, email graph, or social network) 
+in order to identify associates (or ``contacts'') of lawfully targeted users. 
+Government agencies can then investigate those associates to determine whether
+they deserve further attention.\footnote{Note that contact chaining is not
+tantamount to ``guilt by association.''  Rather, it is tantamount to
+``suspicion by association,'' which is in fact a time-honored principal in
+law enforcement.  When investigating a murder, rape, or other violent felony,
+police departments first turn their attention to the associates of the victim.
+Accountable-surveillance practices require that contacts who are suspected,
+investigated, and found {\it not} to be involved in illegal activity be 
+cleared of suspicion and that their personal information be deleted from 
+agencies' databases.} It is useful to consider both direct contacts, 
+{\it i.e.}, users who are neighbors in the communication graph, and
+extended contacts, {\it i.e.}, users who are at distance $k$ in the 
+communication graph, for an appropriate constant $k$.
+In a phone-call graph, if Alice calls Bob, 
+and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and 
+Charlie), but Alice and Charlie are extended contacts (more precisely,
+contacts at distance 2).  Without accountability and security mechanisms to
+limit an investigation's scope, contact chaining in a mass-communication
+network can sweep in a huge number of untargeted users.
+In Section~\ref{sec-chaining}, we provide an accountable contact-chaining
+protocol that bounds the scope of the search, uses encryption to protect 
+untargeted users, and is computationally efficient (in that its time
+complexity and space complexity are both linear in the size of the output).
 
 At first blush, it may seem that a symposium on ``privacy-enhancing 
 technologies'' is an odd place for results about ``accountable surveillance.''
