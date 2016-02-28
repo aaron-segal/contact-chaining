@@ -1,8 +1,38 @@
 \section{Lawful Intersection Warrants}\label{sec-intersection}
 In this section, we present an improved implementation of the lawful
 set-intersection protocol of~\cite{sff-foci2014}. 
-{\bf Create Subsections 3.1 and 3.2.  Add something about why this protocol
-satisfies the openness principle.}
+\subsection{Intersections and Privacy}
+
+As described in Section~\ref{sec-intro} and in~\cite{sff-foci2014}, the FBI used
+set intersection to search for phone numbers that appeared in three sets of
+cell-tower dumps. This procedure did not follow the the openness principle.
+The FBI did not distinguish between targeted and untargeted users when
+collecting the data. It only arrested the user in the intersection of the sets
+it collected, as far as we know, but as there was no established accountability
+procedure, we do not know whether the FBI retained the phone numbers of
+untargeted users collected during the search, whether it subjected any of those
+other phone numbers to additional investigation, whether it shared the data sets
+of 150,000 total users with other government agencies, \it{etc}. 
+
+Segal \it{et al.}~\cite{sff-foci2014} presented a private set intersection
+protocol to address these specific concerns. We present a summary of that protocol
+in Section~\ref{sec-isectproto}. This protocol reveals \emph{only} the identities
+of users in the intersection of the sets under consideration, leaving the other,
+untargeted users' identities hidden by encryption. To provide accountability and
+oversight, the protocol requires multiple government agencies to participate. This
+provides a division of authority. No one agency can uncover users' identities
+without other agencies being able to collect records about how often intersection
+warrants are used and set restrictions on how many users the agencies can identify
+under a single warrant.
+
+The lawful contact chaining protocol we present in Section~\ref{sec-chaining} will
+produce large, encrypted sets of user identities. These sets can then be used as
+inputs into the lawful set intersection protocol, to reveal the small, targeted
+group of identities that appear in multiple sets (whether those sets come from cell
+tower dumps as in the High Country Bandits case, contact chaining, or some other
+legally obtained source of information). 
+
+\subsection{Lawful Intersection Protocol}\label{sec-isectproto}
 
 The participants in this
 protocol are government agencies. Before executing the protocol, the 
@@ -10,7 +40,8 @@ agencies must agree on which sets of encrypted user data they wish to
 intersect. These sets are then retrieved from a repository, which stores 
 only ciphertexts encrypted with the ElGamal public keys of all agencies.
 
-Each agency's input is its ElGamal private key and a set of this encrypted data. For each execution of the protocol, the agencies also generate temporary 
+Each agency's input is its ElGamal private key and a set of this encrypted
+data. For each execution of the protocol, the agencies also generate temporary 
 Pohlig-Hellman keys, which they securely delete after the protocol is complete. 
 The protocol works by converting ciphertexts in the probabilistic ElGamal 
 cryptosystem to ciphertexts in the deterministic Pohlig-Hellman 
@@ -39,14 +70,14 @@ ElGamal encryption to determinstic Pohlig-Hellman encryption, without
 ever revealing the plaintext data.
 
 The agencies can then directly compare Pohlig-Hellman ciphertexts to each 
-other to determine which appear in the intersection of all three sets of data. 
+other to determine which appear in the intersection of all sets of data. 
 If the intersection is much larger than expected, any one of the agencies can 
 delete its Pohlig-Hellman decryption key to prevent any user data from being 
 revealed until a more narrowly scoped warrant can be agreed upon. Otherwise, 
 the agencies finish the protocol by using their Pohlig-Hellman decryption keys 
-to reveal only the ciphertexts in the intersection of all three sets.
+to reveal only the ciphertexts in the intersection of all sets.
 
-\subsection{Improved Implementation of Lawful Intersection}
+\subsection{Improved Implementation of Lawful Intersection}\label{sec-isectimpl}
 
 In \cite{sff-foci2014}, the authors presented a Java implementation of the 
 lawful set-intersection protocol. It ran on three PlanetLab computers 
@@ -55,13 +86,18 @@ Although the servers split the data sets between them, the implementation
 handled each set in a sequential manner, decrypting and encrypting 
 ciphertexts one by one.
 
-{\bf Add something about the argument that SFF made about their protocol's
-being fast enough.}
+In an experiment with 150,000 users - the same number of users as the FBI
+examined in the High Country Bandits case - that implementation took
+approximately two hours to run to completeion. As the authors argued an FBI
+investigation is likely to take days to lead to an arrest, even without the
+use of this privacy-preserving technology. Therefore, a two-hour running time
+may not be a major obstacle in this context.
 
-We have produced an improved implementation
-that takes advantage of parallel processing and more advanced computational 
+But because we offer a new use of the lawful intersection protocol, we
+also offer a speedier implementation of it. Our improved implementation
+takes advantage of parallel processing and more advanced computational 
 hardware, thus showing that lawful set-intersection can be performed 
-much more quickly than originally descrbied in~\cite{sff-foci2014}. 
+much more quickly than originally described in~\cite{sff-foci2014}. 
 
 In our upgraded implementation, the agencies decrypt and encrypt 
 multiple ciphertexts in parallel, rather than operating on them one by one. 
