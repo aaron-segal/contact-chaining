@@ -316,25 +316,127 @@ These results are important in evaluating how practical our lawful contact-chain
 %Adding additional line breaks to this section will interfere with the formatting.
 \begin{figure*}[t]
 \centering
-\begin{subfigure}{.33\textwidth}
+\begin{subfigure}{0.66\columnwidth}
 \centering
-\includegraphics[width=0.99\textwidth]{runtime.pdf}
-\captionsetup{justification=centering}
-\caption{Protocol Runtime}
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={Protocol Runtime},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Running Time [min]},
+	ylabel style={overlay, anchor=north,},
+	xmin=10, xmax=1000000,
+	ymin=0.01, ymax=100,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingrsa.csv};	
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{Protocol Runtime}
 \label{fig:runtime}
 \end{subfigure}\hfill
-\begin{subfigure}{.33\textwidth}
+\begin{subfigure}{0.66\columnwidth}
 \centering
-\includegraphics[width=0.99\textwidth]{cputime.pdf}
-\captionsetup{justification=centering}
-\caption{CPU Time}
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={All-Telecom CPU Time},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Total CPU Time [min]},
+	ylabel style={overlay, anchor=north,},
+	xmin=10, xmax=1000000,
+	ymin=0.1, ymax=1000,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingrsa.csv};
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{CPU Time}
 \label{fig:cputime}
 \end{subfigure}\hfill
-\begin{subfigure}{.33\textwidth}
+\begin{subfigure}{0.66\columnwidth}
 \centering
-\includegraphics[width=0.99\textwidth]{bandwidth.pdf}
-\captionsetup{justification=centering}
-\caption{Network Data}
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={Data transferred},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Data transferred [MB]},
+	ylabel style={overlay, anchor=north,},
+	xmin=10, xmax=1000000,
+	ymin=0.1, ymax=10000,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingrsa.csv};	
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1pt,
+	]
+	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{Network Data}
 \label{fig:data}
 \end{subfigure}
 \captionsetup{justification=centering}
