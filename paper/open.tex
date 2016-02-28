@@ -1,4 +1,4 @@
-\section{The Openness Principle in Lawful Surveillance}
+\section{The Openness Principle in Lawful Surveillance}\label{sec-open}
 In this section, we review the openness principle put forth by Segal 
 {\it et al.}~\cite{sff-foci2014}.  Readers familiar with \cite{sff-foci2014} 
 may skip to the next section.
@@ -13,7 +13,7 @@ unclassified in this sense are referred to as {\it secret processes}.
 Although government agencies need not always disclose all of the details of a 
 particular investigation, they do need to follow the open processes 
 established for all bulk surveillance.
-
+
 More precisely, Segal {\it et al.}~\cite{sff-foci2014} draw a distinction 
 between two classes of communication-system users.  {\it Targeted users} are 
 those who are under suspicion and are targets of properly authorized warrants.
@@ -22,7 +22,6 @@ users of a general-purpose, mass-communication system.  Segal {\it et
 al.}~\cite{sff-foci2014} posit that the
 following {\it Openness Principle} should govern all surveillance activity
 in a democratic society:
-
 \begin{enumerate}
 \item[I]
 Any surveillance or law-enforcement process
@@ -41,7 +40,26 @@ Segal {\it et al.} interpret this principle as a requirement that an open
 ``privacy firewall'' be placed between government agencies and citizens'
 private information in a mass-communication network.  Processes that move
 untargeted users' private information through the firewall must be open
-processes.  More generally, the openness principle asserts that, by using
+processes.  The targeted class contains both {\it known} users, {\it i.e.},
+those for whom the government has a name, address, phone number, email address,
+or other piece of personally identifying information, and {\it unknown} users.
+It is not, as it may seem on the surface, oxymoronic to call a user both
+``targeted'' and ``unknown,'' because ambient information may justify the
+targeting of an individual without identifying him or her in any standard sense
+of ``identify.''  For example, a government agency may obtain a ``John Doe
+warrant''~\cite{bieber-penn2002} to investigate users who were present in
+locations $L_i$ at times $T_i$, for $1\leq i\leq k$, without being able to 
+identify those users, because relevant events occurred at those locations at
+those times. Segal {\it et al.}~\cite{sff-foci2014} show how an 
+accountable-surveillance protocol can be used to obtain a large set of
+{\it encrypted} data about both targeted and untargeted users, feed it into a 
+cryptographic protocol that winnows it down to the records of users targeted by
+the John Doe warrant, and decrypt {\it only} those records.  Thus, targeted
+unknown users can be identified ({\it i.e.}, turned into targeted, known users)
+without government agencies' identifying any untargeted users whose 
+encrypted records are touched by the surveillance process.
+
+The essence of the openness principle is that, by using
 appropriate security technology, government agencies can make their 
 data-collection {\it processes} fully public without revealing sensitive
 {\it content} of a specific investigation.  For a more detailed explanation,

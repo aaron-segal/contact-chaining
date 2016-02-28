@@ -14,8 +14,33 @@ assert that, by deploying appropriate security technology in the context of
 sound policy and the rule of law, we can have both user privacy and effective 
 law enforcement and intelligence.
 
-Continuing the approach taken by Segal {\it et al.}~\cite{sff-foci14}, we
+Continuing the approach taken by Segal {\it et al.}~\cite{sff-foci2014}, we
 seek to design and implement protocols for {\it accountable surveillance}.
+We require that government surveillance be conducted according to {\it open
+processes}, as defined in Section~\ref{sec-open} below, and that the privacy
+of {\it untargeted users} be protected.  We consider the surveillance goals
+of {\it set intersection} and {\it contact chaining} and show that both can 
+be achieved in a privacy-preserving, accountable fashion.
+
+The utility of set-intersection protocols was demonstrated in the 
+High Country Bandits case~\cite{anderson13cell}.
+After obtaining cell-tower dumps -- sets of about 150,000 total users
+whose cell phones had been in the vicinity of three banks at the times
+that those banks were robbed -- the FBI intersected the sets and discovered 
+that a single phone had been used at all of the relevant times in all of the 
+relevant places.  They arrested the owner
+of that phone and were able to prove that he was one of the robbers.
+Although this FBI dragnet was effective in catching robbers, it also swept
+in the cell-phone numbers of approximately 149,999 innocent bystanders.
+Segal {\it et al.}~\cite{sff-foci2014} provide an accountable protocol for
+set intersection that preserves the privacy of innocent bystanders.  Their
+rudimentary implementation requires just under two hours on a test instance
+with 150,000 total users.  In Section~\ref{sec-intersection} below, we provide
+a more careful implementation that is faster by a factor of 10; in particular,
+it runs for approximately 10.5 minutes on the test instance of 150,000 users.
+
+In Section~\ref{sec-chaining}, we turn our attention to 
+accountable-surveillance protocols for contact chaining.
 
 At first blush, it may seem that a symposium on ``privacy-enhancing 
 technologies'' is an odd place for results about ``accountable surveillance.''
