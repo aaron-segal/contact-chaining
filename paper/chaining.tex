@@ -25,7 +25,7 @@ Despite this risk, we recognize the potential law-enforcement value of informati
 
 
 
-There are two types of parties in this protocol: Telecommunications companies (telecoms) and government agencies interested in performing lawful contact-chaining (agencies). The protocol is a function of all parties' data.
+There are two types of parties in this protocol: Telecommunications companies (telecoms) and government agencies interested in performing lawful contact-chaining (agencies). The protocol computes a function of all parties' data.
 
 
 
@@ -33,7 +33,7 @@ The telecoms jointly hold an undirected contact graph $G=(V,E)$. Each telecom kn
 
 
 
-In addition to the public knowledge which telecom serves which phone number, the agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $d$). $x$ is a target phone number. $k$ is a (small) distance from $x$, the distance at which the agencies wish to consider chained contacts. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$. Therefore, the warrant also includes $d$, an upper bound on the degree of users the agencies are willing to ``chain'' through. If a phone number has more than $d$ contacts, then the agencies do not consider paths to other users through that phone number in their search. The agencies disregarded for the initial target $x$, however.
+The agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $d$). $x$ is a target phone number. We assume, since $x$ belongs to a user targeted by the agencies, that they also know which telecom serves $x$. $k$ is a (small) distance from $x$, the distance at which the agencies wish to consider chained contacts. For example, if $k=2$, then the agencies only wish to consider users at most 2 phone calls away from their person (or phone number) of interest $x$. Choosing a small limit is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at a distance 2 to $x$. Therefore, the warrant also includes $d$, an upper bound on the degree of users the agencies are willing to ``chain'' through. If a phone number has more than $d$ contacts, then the agencies do not consider paths to other users through that phone number in their search. The agencies disregard $d$ for the initial target $x$, however.
 
 
 
