@@ -16,10 +16,17 @@ communication, whereas previous work in the area dealt with pairwise
 communication.
 
 For contact chaining, it may be possible to speed up our protocols by using
-elliptic-curve cryptography instead of RSA.  It may also be interesting to 
+elliptic-curve cryptography instead of RSA. Additionally, our assumption that
+all parties behave in an honest-but-curious manner might be weakened. By using
+standard zero-knowledge proof techniques, it might be possible to create a version
+of the protocols in Section~\ref{sec-chaining} which are resistant even to, for
+example, a rogue agent maliciously modifying telecom-supplied data to falsely
+incriminate a victim. It may also be interesting to 
 generalize the differential-privacy approach of Kearns {\it et 
 al.}~\cite{krwy-pnas16} so that it applies to indirect contacts as well as
-direct contacts. 
+direct contacts.
+
+
 
 Finally, the Openness Principle put forth in \cite{sff-foci2014} is but one step
 toward a full understanding of how democratic processes and the rule of law
