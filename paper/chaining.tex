@@ -327,7 +327,8 @@ These results are important in evaluating how practical our lawful contact-chain
 	title style={font=\Large,},
 	xlabel={Ciphertexts in Result},
 	ylabel={Running Time [min]},
-	ylabel style={overlay, anchor=north,},
+	ylabel style={overlay},
+	ticklabel style = {font=\large},
 	xmin=10, xmax=1000000,
 	ymin=0.01, ymax=100,
 	%xtick={10, 100, 1000, 10000, 100000},
@@ -343,14 +344,14 @@ These results are important in evaluating how practical our lawful contact-chain
 	color=blue,
 	mark=o,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingrsa.csv};	
 \addplot[
 	color=red,
 	mark=square,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingnocrypto.csv};
 \legend{Lawful contact-chaining, Zero-crypto}
@@ -369,6 +370,7 @@ These results are important in evaluating how practical our lawful contact-chain
 	xlabel={Ciphertexts in Result},
 	ylabel={Total CPU Time [min]},
 	ylabel style={overlay, anchor=north,},
+	ticklabel style = {font=\large},
 	xmin=10, xmax=1000000,
 	ymin=0.1, ymax=1000,
 	%xtick={10, 100, 1000, 10000, 100000},
@@ -384,14 +386,14 @@ These results are important in evaluating how practical our lawful contact-chain
 	color=blue,
 	mark=o,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingrsa.csv};
 \addplot[
 	color=red,
 	mark=square,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingnocrypto.csv};
 \legend{Lawful contact-chaining, Zero-crypto}
@@ -410,6 +412,7 @@ These results are important in evaluating how practical our lawful contact-chain
 	xlabel={Ciphertexts in Result},
 	ylabel={Data transferred [MB]},
 	ylabel style={overlay, anchor=north,},
+	ticklabel style = {font=\large},
 	xmin=10, xmax=1000000,
 	ymin=0.1, ymax=10000,
 	%xtick={10, 100, 1000, 10000, 100000},
@@ -425,14 +428,14 @@ These results are important in evaluating how practical our lawful contact-chain
 	color=blue,
 	mark=o,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingrsa.csv};	
 \addplot[
 	color=red,
 	mark=square,
 	only marks,
-	mark size=1pt,
+	mark size=1.5pt,
 	]
 	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingnocrypto.csv};
 \legend{Lawful contact-chaining, Zero-crypto}
