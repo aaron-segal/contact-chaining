@@ -3,18 +3,29 @@ As networked devices become more available, more capable, and more ubiquitous
 in everyday life, tension mounts between users' desire to safeguard their 
 personal information and government agencies' desire to use that personal 
 information in their pursuit of criminals and terrorists.  For example, 
-both the heated (and still unresolved) discussion about the Snowden 
-revelations that started in 2013 and the ongoing dispute between Apple and 
-the US Justice Department are understood by many people
-as examples of an unpleasant, stark choice: Citizens can either have
-secure devices and control over their personal information, or they can have
+the heated (and still unresolved) discussion about the Snowden 
+revelations that started in 2013 is understood by many people
+as an example of an unpleasant, stark choice: Citizens can either have
+control over their personal information, or they can have
 law-enforcement and intelligence agencies with the tools that they need to
 keep the country safe. We regard this stark choice as a false dichotomy and 
 assert that, by deploying appropriate security technology in the context of 
 sound policy and the rule of law, we can have both user privacy and effective 
 law enforcement and intelligence.
 
-Adopting the approach taken by Bandits~\cite{sff-foci2014}\footnote{For the
+We draw a distinction between law enforcment access to
+third-party records held by businesses such as telephone companies,
+and encrypted information stored on an individual's personal devices:
+our work focuses on the former, not the latter.
+In particular, we believe that lawful searches of third-party records
+can be made much more security- and privacy-preserving than they currently are
+without compromising law enforcement search capabilities.
+We are {\em not} suggesting support for ``key escrowed'' encryption
+or general backdoors in personal devices,
+as is the topic of the ongoing conflict between the FBI and Apple.
+
+Adopting the approach to third-party records search
+taken by Bandits~\cite{sff-foci2014}\footnote{For the
 purpose of anonymization, we present an anonymized version of this manuscript and
 refer to the authors throughout as ``Bandits''.}, we
 seek to design and implement protocols for {\it accountable surveillance}.
