@@ -3,11 +3,13 @@ Contact chaining is a form of government surveillance with which it is deceptive
 
 
 
-Without mechanisms to preserve privacy, a contact chaining search can collect a surprisingly large group of users' information. For example, if the average cell phone user contacts 30 individuals within the period of the investigation, a contact chaining search out to distance 3 would capture 27,000 users on average - or many more if a heavy phone user is swept up by the search. With such a large group, it is assured that the vast majority of contacts will not be the targeted collaborators of the primary suspect in the investigation. This is a large and unnecessary intrusion of privacy. These untargeted users may nevertheless face unwarranted government scrutiny, intrusive investigation, or a risk that their sensitive phone histories may be leaked accidentally.
+Without mechanisms to preserve privacy, a contact chaining search can collect a surprisingly large group of users' information. For example, if the average cell phone user contacts 30 individuals within the period of the investigation, a contact chaining search out to distance 3 would capture 27,000 users on average - or many more if a heavy phone user is swept up by the search. With such a large group, it is assured that the vast majority of contacts will not be the targeted collaborators of the primary suspect in the investigation. This is a large and unnecessary intrusion of privacy. These untargeted users may nevertheless face unwarranted government scrutiny, intrusive investigation, or a risk that their sensitive communications histories may be leaked accidentally.
 
 
 
-Despite this risk, we recognize the potential law-enforcement value of information about social connections between targeted invidivuals. Therefore, we propose a \emph{lawful contact chaining protocol}. This protocol permits multiple government agencies working together to provide oversight and accountability, as discussed in \cite{sff-foci2014}. Using this protocol, the agencies can retrieve an encrypted set of user data from multiple telecoms, each of which holds only part of a larger communication graph. This encrypted set contains the identities of users within a certain distance of a target, but the identities cannot be decrypted unless the agencies cooperate. Under the lawful processes we propose, this cooperation would take the form of an intersecton with other encrypted sets of data, using the protocol from Section~\ref{sec-intersection}. These sets can come from privacy-preserving contact chaining, from cell tower dumps, or from other sources of information about suspects. Importantly, while any set may contain encrypted data about many untargeted users, very few users will appear in \emph{all} the sets, and those few users will be suitable targets for further lawful investigation.
+Despite this risk, we recognize the potential law-enforcement value of information about social connections between targeted invidivuals. Therefore, we propose a \emph{lawful contact chaining protocol}. This protocol permits multiple government agencies working together to provide oversight and accountability, as discussed in \cite{sff-foci2014}. Our protocol focuses on the case in which the government seeks information from multiple telecommunications providers about the communication graph formed by phone calls and text messages. Using this protocol, the agencies can retrieve an encrypted set of user data from multiple telecoms, each of which holds only part of a larger communication graph. This encrypted set contains the identities of users within a certain distance of a target, but the identities cannot be decrypted unless the agencies cooperate. Under the lawful processes we propose, this cooperation would take the form of an intersecton with other encrypted sets of data, using the protocol from Section~\ref{sec-intersection}. These sets can come from privacy-preserving contact chaining, from cell tower dumps, or from other sources of information about suspects. Importantly, while any set may contain encrypted data about many untargeted users, very few users will appear in \emph{all} the sets, and those few users will be suitable targets for further lawful investigation.
+
+The same principles of oversight and accountability provided by multiple government agencies can apply to contact chaining searches in other types of communication graphs, such as the social network graph of Twitter or Facebook. These cases do not require our protocol, however, since if one provider knows the entire communication graph, it can compute the output of the protocol without any interactivity needed.
 
 
 
@@ -29,7 +31,7 @@ There are two types of parties in this protocol: Telecommunications companies (t
 
 
 
-The telecoms jointly hold an undirected contact graph $G=(V,E)$. Each telecom knows only a subset of the edges $E$. $V$ contains vertices labeled with the phone numbers they represent, and $E$ contains an edge between $a$ and $b$ if and only if phone number $a$ has contacted phone number $b$ or vice versa within some window of time. Each phone number $v$ is served by exactly one telecom. We assume telecoms know which telecom serves which phone number. Each telecom keeps records of all phone calls made by phones they serve, including calls made to phone numbers served by other telecoms. The subgraph known by telecom $T$ is $G_T=(V, E_T)$ where $E_T$ is the set of edges $(a, b)$ such that $a$ or $b$ is a phone number served by $T$. Henceforth, for any phone number $a$, let $T(a)$ be the telecom that serves $a$.
+The telecoms jointly hold an undirected communication graph $G=(V,E)$. Each telecom knows only a subset of the edges $E$. $V$ contains vertices labeled with the phone numbers they represent, and $E$ contains an edge between $a$ and $b$ if and only if phone number $a$ has contacted phone number $b$ or vice versa within some window of time. Each phone number $v$ is served by exactly one telecom. We assume telecoms know which telecom serves which phone number. Each telecom keeps records of all phone calls made by phones they serve, including calls made to phone numbers served by other telecoms. The subgraph known by telecom $T$ is $G_T=(V, E_T)$ where $E_T$ is the set of edges $(a, b)$ such that $a$ or $b$ is a phone number served by $T$. Henceforth, for any phone number $a$, let $T(a)$ be the telecom that serves $a$.
 
 
 
@@ -55,11 +57,14 @@ In the protocol below, we refer to ``the agencies'' sending messages to one or m
 
 
 
+Our protocol preserves the privacy of untargeted users as long as all parties execute the protocol in an honest-but-curious manner, all of the government agencies do not collude together, and no telecoms collude with government agencies. A colluding group containing all agencies would be equivalent to the current situation n which the government does not provide meaningful accountability of its own surveillance activities; what we propose is a replacement for this situation, but it does require the government to follow its own laws, once set. A telecom colluding with a government agency would amount to sending that agency free information about its users, or submitting incorrect information to the protocol. But telecoms have no business purpose to deviate from the protocol and risk legal action. In practice, existing legal tools allow law enforcement agencies to gather information about the phone history of a suspect with a valid warrant, but such information cannot generally be used for further contact chaining.
+
+
 \subsubsection{Desired Outputs and Security Properties}
 
 
 
-The desired output of the protocol is for the agencies to learn an encryption of the set of phone numbers within distance $k$ of the targeted phone $x$ in the call graph. The set should exclude numbers for which the only paths from $x$ use an intermediate vertex of degree greater than $d$.
+The desired output of the protocol is for the agencies to learn an encryption of the set of phone numbers within distance $k$ of the targeted phone $x$ in the communication graph. The set should exclude numbers for which the only paths from $x$ use an intermediate vertex of degree greater than $d$.
 
 
 
@@ -75,9 +80,6 @@ With the encryptions of these phone numbers, the agencies can then act as approp
 
 
 
-We assume that all telecoms honestly follow the protocol and submit accurate information about the phone numbers they serve and the records they keep. We assume they send no ciphertexts to the agencies except when called for in the protocol. In practice, existing legal tools allow law enforcement agencies to gather information about the phone call history of a suspect with a valid warrant, but such information cannot generally be used for further contact chaining.
-
-
 
 Below, we present two versions of our protocol. In the first version, the agencies and telecoms learn some additional information. Specifically, the agencies learn the provider of each phone number in the encrypted set, and the distance from $x$ of each encrypted phone number. Each telecom learns which of the phone numbers it serves appear in the agencies' output, as well as the distance of each of those phone numbers from the target phone number $x$.
 
@@ -86,8 +88,7 @@ Below, we present two versions of our protocol. In the first version, the agenci
 In section \ref{sec-proto2}, we will present a second version of the protocol in which the agency \emph{does not} learn which telecom serves which encrypted phone number.
 
 
-
-As long as all parties honestly follow the protocol, the agencies collectively learn \emph{no} information about the edge set $E$ except what is implied by the output. Furthermore, as long as at least one agency follows the protocol honestly and does not collude with the others, the remaining agencies cannot learn any of the phone numbers that appear in encrypted form in the output (unless implied by the size of the encrypted output and the leaked service information), nor can the colluding agencies cause a phone number not within distance $k$ of target $x$ to appear in the output, even in encrypted form. Telecoms have the ability to send additional information about their users to agencies or other telecoms at any time, but we assume they will not wish to do so, since they have a business interest to protect user information and comply with the law. We assume that all telecoms follow the protocol honestly.
+As long as our security assumptions for this protocol hold, the agencies collectively learn \emph{no} information about the edge set $E$ except what is implied by the output. Furthermore, the agencies cannot learn any of the phone numbers that appear in encrypted form in the output (unless implied by the size of the encrypted output and the leaked service information), nor can agencies cause a phone number not within distance $k$ of target $x$ to appear in the output, even in encrypted form.
 
 
 
