@@ -7,9 +7,11 @@ Without mechanisms to preserve privacy, a contact chaining search can collect a 
 
 
 
-Despite this risk, we recognize the potential law-enforcement value of information about social connections between targeted invidivuals. Therefore, we propose a \emph{lawful contact chaining protocol}. This protocol permits multiple government agencies working together to provide oversight and accountability, as discussed in \cite{sff-foci2014}. Our protocol focuses on the case in which the government seeks information from multiple telecommunications providers about the communication graph formed by phone calls and text messages. Using this protocol, the agencies can retrieve an encrypted set of user data from multiple telecoms, each of which holds only part of a larger communication graph. This encrypted set contains the identities of users within a certain distance of a target, but the identities cannot be decrypted unless the agencies cooperate. Under the lawful processes we propose, this cooperation would take the form of an intersecton with other encrypted sets of data, using the protocol from Section~\ref{sec-intersection}. These sets can come from privacy-preserving contact chaining, from cell tower dumps, or from other sources of information about suspects. Importantly, while any set may contain encrypted data about many untargeted users, very few users will appear in \emph{all} the sets, and those few users will be suitable targets for further lawful investigation.
+Despite this risk, we recognize the potential law-enforcement value of information about social connections between targeted invidivuals. Therefore, we propose a \emph{lawful contact chaining protocol}. This protocol permits multiple government agencies working together to provide oversight and accountability, as advocated in \cite{sff-foci2014}. Our protocol focuses on the case in which the government seeks information from multiple telecommunications providers about the communication graph formed by phone calls and text messages. Using this protocol, the agencies can retrieve an encrypted set of user data from multiple telecoms, each of which holds only part of a larger communication graph. This encrypted set contains the identities of users within a certain distance of a target, but the identities cannot be decrypted unless the agencies cooperate. Under the lawful processes we propose, this cooperation would take the form of an intersecton with other encrypted sets of data, using the protocol from Section~\ref{sec-intersection}. These sets can come from privacy-preserving contact chaining, from cell tower dumps, or from other sources of information about suspects. Importantly, while any set may contain encrypted data about many untargeted users, very few users will appear in \emph{all} the sets, and those few users will be suitable targets for further lawful investigation.
+
 
 The same principles of oversight and accountability provided by multiple government agencies can apply to contact chaining searches in other types of communication graphs, such as the social network graph of Twitter or Facebook. These cases do not require our protocol, however, since if one provider knows the entire communication graph, it can compute the output of the protocol without any interactivity needed.
+
 
 
 
@@ -64,7 +66,7 @@ Our protocol preserves the privacy of untargeted users as long as all parties ex
 
 
 
-The desired output of the protocol is for the agencies to learn an encryption of the set of phone numbers within distance $k$ of the targeted phone $x$ in the communication graph. The set should exclude numbers for which the only paths from $x$ use an intermediate vertex of degree greater than $d$.
+The goal of the protocol is for the agencies to obtain a set of ciphertexts, each of which is the encryption of a phone number $v$ such that the distance in the communication graph from $v$ to the targeted phone number $x$ is at most $k$. The set should not contain encryptions of numbers $v$ such that each path from $x$ to $v$ of length at most $k$ contains an intermediate vertex of degree greater than $d$. Here the ``intermediate'' vertices in a path are all vertices except the endpoints $x$ and $v$.
 
 
 
@@ -158,7 +160,7 @@ The protocol is as follows:
 
 
 
-For the sake of efficiency, it is worth noting that the inner loop can be executed many times in parallel, up to the point of completely emptying $\mathbf{Q}$ at the beginning of the loop. Many messages to the same telecom can also be batched and sent together, reducing the number of signing and verifying operations to depend only on $k$ and not on the size of the input or output.
+For the sake of efficiency, it is worth noting that the inner loop can be executed many times in parallel, up to the point of completely emptying $\mathbf{Q}$ at the beginning of the loop. Many messages to the same telecom can also be batched and sent together, thereby reducing the number of signing and verifying operations so that they depend only on $k$ and not on the size of the input or output.
 
 
 
@@ -171,9 +173,7 @@ For the sake of efficiency, it is worth noting that the inner loop can be execut
 The previous version of the protocol allows agencies to learn which telecoms own the phone numbers in its encrypted output. This subsection presents a modification of the previous version of the protocol, which uses a DC-nets-based \emph{anonymity protocol} to hide this information from the agencies (except with respect to the initial target $x$).
 
 
-
-An anonymity protocol is run between a number of parties, some of which have a message to send. At the end of the protocol, all parties must learn all messages sent, but no party other than the sender of any given message learns which party sent that message. Dissent~\cite{dissent} and Verdict~\cite{verdict} both satisfy our requirements, although they are more powerful than we need here, since we assume all telecoms are honest-but-curious.
-
+An anonymity protocol is run by a number of parties, some of which have messages to send. At the end of the protocol, all parties must learn all messages sent, but no party other than the sender of any given message can learn which party sent that message. Dissent~\cite{dissent} and Verdict~\cite{verdict} both satisfy our requirements; they are more powerful than we need, however, because we assume all telecoms are honest-but-curious.
 
 
 We can use an anonymity protocol to allow the correct telecom to respond anonymously in steps \ref{proto1:first-send} and \ref{proto1:second-send} in the protocol above. This removes the need for the agencies to know which telecom owns which ciphertext.
