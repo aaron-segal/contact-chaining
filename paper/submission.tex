@@ -41,9 +41,7 @@
   %\subtitle{...}
 
   \begin{abstract}
-{As demonstrated, {\it e.g.}, by Snowden's revelation of controversial NSA 
-activity and by Apple's refusal to obey a Justice Department order to break 
-an iPhone security mechanism, the question of how government agencies can
+{The question of how government agencies can
 acquire actionable, useful information about legitimate but unknown targets 
 without intruding upon the electronic activity of innocent parties is 
 extremely important.  We address this question by providing experimental
@@ -51,7 +49,16 @@ evidence that actionable, useful information can indeed be obtained in a manner
 that preserves the privacy of innocent parties and that holds government
 agencies accountable.  In particular, we present practical, privacy-preserving
 protocols for two operations that law-enforcement and intelligence agencies
-have used effectively: {\it set intersection} and {\it contact chaining}.}
+have used effectively: {\it set intersection} and {\it contact chaining}.
+Experiments with our protocols suggest
+that privacy-preserving contact chaining can perform
+a 3-hop privacy-preserving graph traversal producing 27,000 ciphertexts
+in under two minutes.
+These ciphertexts are usable in turn via private set
+intersection to pinpoint potential unknown targets within a body of 150,000
+total ciphertexts within 10 minutes,
+without exposing personal information about non-targets.
+}
   \end{abstract}
   \keywords{Privacy, Secure multiparty computation, Surveillance}
 %  \classification[PACS]{}
