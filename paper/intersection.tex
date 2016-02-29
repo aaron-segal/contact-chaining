@@ -15,7 +15,8 @@ other phone numbers to additional investigation, whether it shared the data sets
 of 150,000 total users with other government agencies, \emph{etc}. 
 
 Segal \emph{et al.}~\cite{sff-foci2014} presented a private set intersection
-protocol to address these specific concerns. We present a summary of that protocol
+protocol, based on the ElGamal~\cite{elgamal} and Pohlig-Hellman~\cite{pohlighellman}
+cryptosystems, to address these specific concerns. We present a summary of that protocol
 in Section~\ref{sec-isectproto}. This protocol reveals \emph{only} the identities
 of users in the intersection of the sets under consideration, leaving the other,
 untargeted users' identities hidden by encryption. To provide accountability and
@@ -124,7 +125,6 @@ Figure~\ref{fig:isectgraph}.
 	ymin=0.01, ymax=1000,
 	%xtick={10, 100, 1000, 10000, 100000},
 	%ytick={0.01, 0.1, 1, 10, 100, 1000},
-	log ticks with fixed point,
 	legend pos=north west,
 	ymajorgrids=true,
 	xmajorgrids=true,
@@ -143,7 +143,7 @@ Figure~\ref{fig:isectgraph}.
 	]
 	table [x=Items, y=Sequential, col sep=comma] {intersection.csv};
 
-\legend{Parallel, Sequential}
+\legend{New prototype (8 threads), Old prototype (1 thread)}
 \end{loglogaxis}
 \end{tikzpicture}
 \captionsetup{justification=centering}
