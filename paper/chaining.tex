@@ -1,5 +1,5 @@
 \section{Lawful Contact Chaining}\label{sec-chaining}
-Contact chaining is a form of government surveillance with which it is deceptively easy to expose many innocent, untargeted users to government scrutiny. The goal of contact chaining is to use information about social connections between identities, such as records of phone calls between one number and another, to identify members of a criminal organization or terrorist group. Starting with one or more suspects whose identities are known, the government aims to consider contacts of those suspects. These can be \emph{direct contacts}, such as two people who spoke on the phone, or \emph{extended contacts}, such as two people connected by a chain of two or more phone calls. If Alice calls Bob, and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and Charlie), but Alice and Charlie are extended contacts. We may also say that Alice and Charlie are at a distance of 2 in the communication graph (since the shortest number of phone calls that connect Alice to Charlie is 2).
+Contact chaining is a form of government surveillance with which it is deceptively easy to expose many innocent, untargeted users to government scrutiny. The goal of contact chaining is to use information about social connections between identities, such as records of phone calls between one number and another, to identify members of a criminal organization or terrorist group. Starting with one or more suspects whose identities are known, the government aims to consider contacts of those suspects. These can be \emph{direct contacts}, such as two people who spoke on the phone, or \emph{extended contacts}, such as two people connected by a chain of two or more phone calls. If Alice calls Bob, and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and Charlie), but Alice and Charlie are extended contacts. We may also say that Alice and Charlie are at distance 2 in the communication graph (because the smallest number of phone calls that connect Alice to Charlie is 2).
 
 
 
@@ -17,7 +17,7 @@ Despite this risk, we recognize the potential law-enforcement value of informati
 
 
 
-%This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in sections \ref{sec-proto1} and \ref{sec-proto2}.
+%This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in Sections \ref{sec-proto1} and \ref{sec-proto2}.
 
 
 
@@ -39,7 +39,7 @@ We can assume that business phone numbers have many more contacts than personal 
 
 This provides a reasonable limit to the scope of the investigation and hides what are very likely to be untargeted users from the government. In the uncommon scenario where a business number with many contacts also functions as a front or hub for a criminal organization to be revealed, the government is still able to conduct further investigation on it, perhaps even beginning a new contact-chaining search with that number as the initial target.
 
-We specify the protocol in full in sections~\ref{sec-proto1} and \ref{sec-proto2}.
+We specify the protocol in full in Sections~\ref{sec-proto1} and \ref{sec-proto2}.
 
 
 
@@ -245,7 +245,7 @@ We now take a moment to discuss the correctness and privacy properties of both v
 
 
 
-The agencies' outputs from the protocols in sections~\ref{sec-proto1} and \ref{sec-proto2} will be $\mathbf{C}$. $\mathbf{C}$ will contain agency ciphertexts of all phone numbers at most $k$ phone calls away from $x$, considering only vertices of degree at most $d$. This is the desired output. $C$ reveals nothing to any agencies unless they all provide their decryption keys. To continue the process of lawful investigation, the agencies should combine the output $\mathbf{C}$ with other sets of potential suspects (such as from further runs of this protocol, or from cell tower dumps) in a lawful intersection protocol.
+The agencies' outputs from the protocols in Sections~\ref{sec-proto1} and \ref{sec-proto2} will be $\mathbf{C}$. $\mathbf{C}$ will contain agency ciphertexts of all phone numbers at most $k$ phone calls away from $x$, considering only vertices of degree at most $d$. This is the desired output. $C$ reveals nothing to any agencies unless they all provide their decryption keys. To continue the process of lawful investigation, the agencies should combine the output $\mathbf{C}$ with other sets of potential suspects (such as from further runs of this protocol, or from cell tower dumps) in a lawful intersection protocol.
 
 
 
