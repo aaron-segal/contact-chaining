@@ -1,0 +1,64 @@
+Reviewers C and D seem to base their "reject" scores on the notion that
+section 3 is our main contribution. Actually, section 3 is intended as
+relevant background from our previous paper. Sections 4 and 5 are our
+main results, as reviewer A noted. A camera-ready version without
+author anonymity requirements would make this relationship clear.
+
+Section 3.3 is indeed merely an engineering result, which we never
+intended to carry the weight of the paper. We included it in order to
+respond to specific concerns raised after the presentation of our last
+paper. It could be moved to an appendix.
+
+Reviewer A:
+
+We selected the social network to experiment on because we preferred
+real data to simulated data, and because the actual phone call graph is
+not freely available. But we do have similar results for simulated
+graphs which we could include in the camera-ready version.
+
+Reviewer B:
+
+If the law enforcement agency already holds part of the database, we
+can treat that agency as a "telecom" for the purpose of the protocol
+without (further) compromising privacy.
+
+Our understanding is that the changes to the "215" program mean that
+the telecoms store user data until it is searched by the government.
+Although we did not say so explicitly, that is the model our
+contact-chaining algorithm uses.
+
+Reviewer C:
+
+It is true that telecoms have colluded with law enforcement in the
+past, but no system can account for telecoms arbitrarily sending data
+to other parties, except perhaps for a legal evidentiary hearing.
+
+Reviewer D:
+
+We agree that a solution resistant to all agencies colluding would be
+excellent, but the notion of distributed trust is also well-founded in
+the literature. On the other hand, neither of the alternatives reviewer
+D mentions serve for the purpose of mass surveillance that we address,
+and neither of them have considered contact-chaining, our main
+contribution.
+
+We are familiar with accountable anonymity, but the problem of mass
+surveillance is fundamentally different. Accountable anonymity treats
+each user as a party to the protocol. In papers such as Tsang et al.,
+"revoked" users are not deanonymized, and the authority responsible for
+revoking users is assumed to be honest. In dining-cryptographers-based
+accountable anonymity protocols, the identities of all users must be
+known in advance, and individual users can be held accountable only
+through a deviation from the protocol in some way, and potentially at
+great computational cost. Neither type of accountable anonymity is
+fully collusion-resistant.
+
+Revokable privacy is similar to privacy-preserving surveillance in many
+ways, but the crucial distinction is that revokable privacy has been
+studied primarily in theoretical contexts involving fairly small
+amounts of data, whereas our work focuses on practicality, scalability,
+and *mass* surveillance. Lueks et al. offer no sense of how long it
+would take to run forward-secure distributed encryption on commercial
+hardware, and their protocols are exponential. The common use case of
+hundreds of cars driving down a highway is not scalable to hundreds of
+thousands (or more) of users on a communication network.
