@@ -2,11 +2,13 @@
 \usepackage{etex}
 \usepackage[utf8]{inputenc}%(only for the pdftex engine)
 %\RequirePackage[no-math]{fontspec}%(only for the luatex or the xetex engine)
-\usepackage[big]{dgruyter_NEW}
+%\usepackage[big]{dgruyter_NEW}
+\usepackage{amsmath}
+\usepackage{hyperref}
  
-\DOI{foobar}
+%\DOI{foobar}
 
-\cclogo{\includegraphics{by-nc-nd.pdf}}
+%\cclogo{\includegraphics{by-nc-nd.pdf}}
 
 \DeclareMathOperator{\Enc}{Enc}
 
@@ -17,29 +19,41 @@
 \usepackage{subcaption}
 \usepackage{pgfplots}
  
-\begin{document}
- 
+  \title{Open, privacy-preserving protocols for lawful surveillance}
+  \author{
+	Aaron Segal and Joan Feigenbaum \\
+	Yale University \\
+	New Haven, CT, USA
+	\and
+	Bryan Ford \\
+	Swiss Federal Institute of Technology (EPFL) \\
+	Lausanne, Switzerland}
+  \date{}
 
   %\author*[1]{Aaron Segal}
-  \author[1]{Names withheld}
+  %\author[1]{Names withheld}
 
   %\author[2]{Bryan Ford}
 
   %\author[3]{Joan Feigenbaum}
 
   %\affil[1]{Yale Univ., E-mail: Aaron.Segal@yale.edu}
-  \affil[1]{Affiliations and email addresses withheld}
+  %\affil[1]{Affiliations and email addresses withheld}
 
   %\affil[2]{EPFL, E-mail: Bryan.Ford@epfl.ch}
 
   %\affil[3]{Yale Univ., E-mail: Joan.Feigenbaum@yale.edu}
 
-  \title{\huge Open, privacy-preserving protocols for lawful surveillance}
+  %\title{\huge Open, privacy-preserving protocols for lawful surveillance}
 
-  \runningtitle{Privacy-preserving, lawful surveillance}
+  %\runningtitle{Privacy-preserving, lawful surveillance}
 
   %\subtitle{...}
 
+\begin{document}
+
+\maketitle
+ 
   \begin{abstract}
 {The question of how government agencies can
 acquire actionable, useful information about legitimate but unknown targets 
@@ -60,21 +74,21 @@ total ciphertexts within 10 minutes,
 without exposing personal information about non-targets.
 }
   \end{abstract}
-  \keywords{Privacy, Secure multiparty computation, Surveillance}
+%  \keywords{Privacy, Secure multiparty computation, Surveillance}
 %  \classification[PACS]{}
  % \communicated{...}
  % \dedication{...}
 
-  \journalname{Proceedings on Privacy Enhancing Technologies}
-\DOI{Editor to enter DOI}
-  \startpage{1}
-  \received{February 29, 2016}
+  %\journalname{Proceedings on Privacy Enhancing Technologies}
+  %\DOI{Editor to enter DOI}
+  %\startpage{1}
+  %\received{February 29, 2016}
   %\revised{..}
   %\accepted{..}
 
-  \journalyear{2016}
-  \journalvolume{2016}
-  \journalissue{4}
+  %\journalyear{2016}
+  %\journalvolume{2016}
+  %\journalissue{4}
 
 \maketitle
 
@@ -102,16 +116,16 @@ without exposing personal information about non-targets.
 %\bibitem{arxiv-1} M.~Majewski, K.~Malarz, arXiv:cond-mat/0609635v2 [cond-mat.stat-mech]
 %\bibitem{arxiv-2} J.~A.~C.~E.~Solano, arXiv:0707.1343v1 [astro-ph]
 
-%\bibitem{sff-foci2014} A.~Segal, B.~Ford, J.~Feigenbaum, 
-%In: J. Crandall and V. Paxson (Eds.), $4^{th}$ Workshop on Free and 
-%Open Communications on the Internet, August 18, 2014, San Diego, 
-%USA (USENIX, Berkeley, 2014)
+\bibitem{sff-foci2014} A.~Segal, B.~Ford, J.~Feigenbaum, 
+In: J. Crandall and V. Paxson (Eds.), $4^{th}$ Workshop on Free and 
+Open Communications on the Internet, August 18, 2014, San Diego, 
+USA (USENIX, Berkeley, 2014)
 
 \vskip 1\baselineskip %needed to compile correctly
 
-\bibitem{sff-foci2014} Bandits, Catching Bandits and Only Bandits:
-Privacy-Preserving Intersection Warrants for Lawful Surveillance,
-February 2016, \url{https://drive.google.com/file/d/0BwK1bcoczINtbUhPaFI0Mk1DVk0/view}
+%\bibitem{sff-foci2014} Bandits, Catching Bandits and Only Bandits:
+%Privacy-Preserving Intersection Warrants for Lawful Surveillance,
+%February 2016, \url{https://drive.google.com/file/d/0BwK1bcoczINtbUhPaFI0Mk1DVk0/view}
 
 \bibitem{anderson13cell} N.~Anderson, arstechnica, August 29, 2013. 
 
