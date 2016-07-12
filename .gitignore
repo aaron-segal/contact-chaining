@@ -54,3 +54,5 @@ paper/submission.idx
 *.auxlock
 *.md5
 *.idx
+*.bbl
+paper/submission.blg

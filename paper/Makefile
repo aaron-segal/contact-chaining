@@ -2,10 +2,13 @@
 
 MAIN=submission
 LATEX=pdflatex
+BIBTEX=bibtex
 
 all: paper tidy
 
 paper: $(MAIN).tex
+	$(LATEX) $(MAIN)
+	$(BIBTEX) $(MAIN)
 	$(LATEX) $(MAIN)
 	$(LATEX) $(MAIN)
 
