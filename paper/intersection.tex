@@ -116,7 +116,7 @@ Figure~\ref{fig:isectgraph}.
 
 \begin{figure}
 \centering
-\begin{tikzpicture}
+\resizebox{\linewidth}{!}{\begin{tikzpicture}
 \begin{loglogaxis}[
 	title={Parallel vs. Sequential Running Time},
 	xlabel={Total Set Size [Ciphertexts]},
@@ -146,6 +146,7 @@ Figure~\ref{fig:isectgraph}.
 \legend{New prototype (8 threads), Old prototype (1 thread)}
 \end{loglogaxis}
 \end{tikzpicture}
+}
 \captionsetup{justification=centering}
 \caption{Comparison of Lawful Intersection Performance}
 \label{fig:isectgraph}

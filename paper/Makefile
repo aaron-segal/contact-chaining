@@ -4,7 +4,7 @@ MAIN=submission
 LATEX=pdflatex
 BIBTEX=bibtex
 
-all: paper tidy
+all: paper
 
 paper: $(MAIN).tex
 	$(LATEX) $(MAIN)

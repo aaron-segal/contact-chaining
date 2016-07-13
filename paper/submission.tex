@@ -1,11 +1,14 @@
-%\documentclass[USenglish,oneside,twocolumn]{article}
-\documentclass{sig-alternate-05-2015}
+\documentclass[USenglish,oneside,twocolumn]{article}
+%\documentclass{sig-alternate-05-2015}
+\pdfoutput=1
 
+\usepackage{times}
 \usepackage{etex}
 \usepackage[utf8]{inputenc}%(only for the pdftex engine)
 %\RequirePackage[no-math]{fontspec}%(only for the luatex or the xetex engine)
 %\usepackage[big]{dgruyter_NEW}
 \usepackage{amsmath}
+\usepackage[hyphens]{url}
 \usepackage{hyperref}
  
 %\DOI{foobar}
@@ -57,7 +60,7 @@
 
 \begin{document}
 
-\setcopyright{acmcopyright}
+%\setcopyright{acmcopyright}
 %\setcopyright{acmlicensed}
 %\setcopyright{rightsretained}
 %\setcopyright{usgov}
@@ -72,7 +75,7 @@
 %\isbn{123-4567-24-567/08/06}
 
 %Conference
-\conferenceinfo{WPES '16}{October 24, 2016, Vienna, Austria}
+%\conferenceinfo{WPES '16}{October 24, 2016, Vienna, Austria}
 
 %\acmPrice{\$15.00}
 
@@ -129,7 +132,4 @@ without exposing personal information about non-targets.
 \bibliography{chaining}
 \bibliographystyle{plain}
 
-
 \end{document}
-
-
