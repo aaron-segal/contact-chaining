@@ -22,7 +22,20 @@
 \usepackage{subcaption}
 \usepackage{pgfplots}
  
+
+% Select one or other if want to see comments.
+% \com is sometimes displayed during draft.
+\long\def\com#1{}
+%\long\def\com#1{{\bf \sc comment: }{\small [#1]}{\bf \sc\ endcomment}\newline}
+
+% for paralist compactitem envs
+\defaultleftmargin{\parindent}{}{}{}
+
+
+\hyphenation{anon-y-mized}
+
  
+  %\title{\vspace{-1em}Privacy-Preserving Contact Chaining}
   \title{Privacy-Preserving Contact Chaining}
   \subtitle{[Preliminary Report]}
   \numberofauthors{3}
@@ -75,15 +88,13 @@ DHS grant FA8750-16-2-0034.}\\
 \maketitle
  
   \begin{abstract}
-{The question of how government agencies can
-acquire actionable, useful information about legitimate targets 
-without intruding upon innocent parties is 
-extremely important.  We provide experimental evidence that actionable, 
-useful information can be obtained in a manner
-that preserves the privacy of innocent parties and that holds government
-agencies accountable.  In particular, we present a practical, 
-privacy-pre\-serving protocol for {\it contact chaining}, which is an 
-operation that law-enforcement and intelligence agencies have used 
+{How can government agencies
+acquire actionable, useful information about legitimate targets,
+while preserving the privacy of innocent parties and holding government
+agencies accountable?
+Towards understanding this crucial issue,
+we present the first privacy-preserving protocol for {\it contact chaining},
+an operation that law-enforcement and intelligence agencies have used 
 effectively.  Our experiments suggest that 
 a three-hop, privacy-preserving graph traversal producing 27,000 ciphertexts
 can be done in under two minutes.
@@ -116,10 +127,9 @@ can be done in under two minutes.
 %\input{acks}
 
 %% ###################################################################
+%\begin{footnotesize}
 \bibliography{chaining}
 \bibliographystyle{plain}
-
+%\end{footnotesize}
 
 \end{document}
-
-

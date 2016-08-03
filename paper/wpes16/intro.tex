@@ -28,7 +28,7 @@ The goal is to use the topology of a {\it communication
 graph} ({\it e.g.}, a phone-call graph, email graph, or social network) 
 to identify associates (or ``contacts'') of 
 lawfully targeted users~\cite{techdirt}. 
-Government agencies can then investigate those associates to determine whether
+Agencies can then investigate those associates to determine whether
 they deserve further attention.
 It is useful to consider both direct contacts, 
 {\it i.e.}, users who are neighbors in the communication graph, and
@@ -41,11 +41,10 @@ communication graph, for an appropriate constant $k$.
 Without accountability and security mechanisms to
 limit an investigation's scope, contact chaining in a mass-communication
 network can sweep in a huge number of untargeted users.
-In Section~\ref{sec-chaining}, we provide an accountable contact-chaining
+Section~\ref{sec-chaining} presents an accountable contact-chaining
 protocol that bounds the scope of the search, uses encryption to protect 
-untargeted users, and is computationally efficient (in that its time
-complexity and communication complexity are both linear in the size of the 
-output).
+untargeted users, and is computationally efficient,
+with time and communication complexity linear in the size of the output.
 
 We posit that the
 {\it Openness Principle} put forth in \cite{sff-foci2014} 
@@ -61,7 +60,7 @@ Any secret surveillance or law-enforcement processes shall use only:
 \begin{compactenum}
 \item[(a)] public information and
 \item[(b)] private information about targeted users obtained under 
-authorized warrants via open surveillance processes.
+authorized warrants via open processes.
 \end{compactenum}
 \end{compactenum}
 This principle can be viewed as a requirement that an open
