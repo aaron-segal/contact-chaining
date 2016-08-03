@@ -1,0 +1,302 @@
+\section{Lawful Contact Chaining}\label{sec-chaining}
+The goal of contact chaining is to use information about social connections between identities, {\it e.g.}, records of phone calls between one number and another, to identify members of a criminal organization or terrorist group. Starting with one or more suspects whose identities are known, the government aims to consider contacts of those suspects. These can be \emph{direct contacts}, such as two people who spoke on the phone, or \emph{extended contacts}, such as two people connected by a chain of two or more phone calls. If Alice calls Bob, and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and Charlie).  If neither Alice nor Charlie called the other during the period of investigation that defines the graph, then we say that they are extended contacts (or, more precisely, that they are at distance two in the graph). 
+
+Without mechanisms to preserve privacy, a contact chaining search can collect a surprisingly large group of users' information. For example, if the average 
+cell-phone user contacts 30 individuals within the period of the investigation,
+a contact-chaining search out to distance three would capture 27,000 users on average - or many more if a heavy phone user is swept up by the search. In such a large group, the vast majority of contacts will not be collaborators of the the targeted, primary suspect in the investigation. These untargeted users may nevertheless face government scrutiny, intrusive investigation, or a risk that their sensitive communications histories may be leaked accidentally.
+
+Despite this risk, 
+we recognize the potential law-enforce\-ment value of information about the social contacts of targeted invidivuals. Therefore, we propose a \emph{lawful contact chaining protocol}. This protocol permits multiple government agencies working together to provide oversight and accountability, as advocated in \cite{sff-foci2014}. Our protocol focuses on the case in which the government seeks information from multiple telecommunications providers about the communication graph formed by phone calls and text messages. Using this protocol, the agencies can retrieve a set of encrypted records from multiple telecoms, {\it each of which holds only part of a larger communication graph}. This set of encrypted data 
+contains the identities of users within a certain distance of a target, but the identities cannot be decrypted unless the agencies cooperate. Under the lawful processes we propose, this cooperation would take the form of intersecton with other sets of encrypted data. These sets can come from privacy-preserving contact chaining, from cell-tower dumps, or from other sources of information about suspects. Importantly, while any set may contain encrypted data about many untargeted users, very few users will appear in \emph{all} the sets, and those few users will be suitable targets for further lawful investigation.
+
+
+The same principles of oversight and accountability provided by multiple government agencies can apply to contact chaining searches in other types of communication graphs, such as the social network graph of Twitter or Facebook. These cases do not require our protocol, however, since if one provider knows the entire communication graph, it can compute the output of the protocol without any interaction.
+
+\subsection{Protocols For Privacy-Preserving Contact Chaining}
+
+\label{sec-proto}
+
+
+
+%This is a candidate protocol for privacy-preserving contact chaining. We discuss the desired inputs, outputs, and security assumptions below, and then present two versions of the protocol in Sections \ref{sec-proto1} and \ref{sec-proto2}.
+
+
+
+\subsubsection{Inputs and Parties to the Protocol}
+
+
+
+There are two types of parties in this protocol: Telecommunications companies (telecoms) and government agencies interested in performing lawful contact-chaining (agencies). The protocol computes a function of all parties' data.
+
+
+
+The telecoms jointly hold an undirected communication graph $G=(V,E)$. Each telecom knows only a subset of the edges $E$. $V$ contains vertices labeled with the phone numbers they represent, and $E$ contains an edge between $a$ and $b$ if and only if phone number $a$ has contacted phone number $b$ or {\it vice versa} within the period of the investigation. Each phone number $v$ is served by exactly one telecom. We assume telecoms know which telecom serves which phone number. Each telecom keeps records of all phone calls made by phones they serve, including calls made to phone numbers served by other telecoms. The subgraph known by telecom $T$ is $G_T=(V, E_T)$ where $E_T$ is the set of edges $(a, b)$ such that $a$ or $b$ is a phone number served by $T$. Henceforth, for any phone number $a$, let $T(a)$ be the telecom that serves $a$.
+
+
+
+The agencies must each hold a copy of a \emph{warrant} in order to perform this protocol. A warrant is a triplet ($x$, $k$, $d$). $x$ is a target phone number. Because $x$ belongs to a user targeted by the agencies, we assume that the agencies also know which telecom serves $x$. $k$ is the (small) distance from $x$ to which the agencies wish to ``chain out.'' 
+Choosing a small distance is important to limiting the scope of the investigation. However, many users' information might still be captured if some phone numbers have very many contacts. Suppose the target $x$ calls the most popular pizza place in town. Now everyone else who has recently called that pizza place is at distance at most two from $x$.
+
+We can assume that business phone numbers have many more contacts than personal phone numbers do. In most cases, knowing that two individuals have contacted the same business does not indicate that those individuals have a personal relationship. Therefore, the warrant also includes $d$, an upper bound on the degree of users that the agencies are willing to ``chain through.'' If a phone number has more than $d$ contacts, then the agencies do not follow paths to other users through that phone number in their search (but do include that number in the output). The agencies disregard $d$ for the initial target $x$, however, because they have already determined that contacts of $x$ are of potential interest, even if $x$ is a business. 
+
+This provides a reasonable limit to the scope of the investigation and hides what are very likely to be untargeted users from the government. In the uncommon scenario in which a business with many contacts also functions as a front for a criminal organization, the government could conduct further investigation, perhaps beginning a new contact-chaining search with that number as the initial target.
+
+\subsubsection{Security Assumptions}
+
+We assume some existing cryptographic infrastructure. 
+All telecoms and agencies must have public encryption keys known to all other parties to the protocol and private decryption keys. 
+For the purpose of interoperability with lawful intersection~\cite{sff-foci2014}, agencies' keys must be for a commutative cryptosystem ({\it e.g.}, ElGamal). 
+Each party must also have a private signing key and a public verification key.
+
+In the protocol below, we refer to ``the agencies' sending'' messages to one or more telecoms. Exactly which agency transmits messages to the telecoms is not important to our protocol, but a telecom will disregard any message not accompanied by signatures from all agencies. One simple topology is for a single agency to act as a relay, forwarding reponses from the telecoms to the other agencies and signatures on agency messages to the telecoms.
+
+
+
+Our protocol preserves the privacy of untargeted users as long as all parties execute the protocol in an honest-but-curious manner, 
+at least one of the government agencies does not collude with the others, and no telecom colludes with government agencies. 
+A colluding group containing all agencies would be equivalent to the current situation, in which the government does not provide meaningful accountability of its own surveillance activities; what we propose is a replacement for this situation, but it does require the government to follow its own laws, once set. 
+A telecom's colluding with a government agency would amount to sending that agency free information about its users or submitting incorrect information to the protocol. But telecoms have no business purpose to deviate from the protocol and risk legal action. In practice, existing legal tools allow law enforcement agencies to gather information about the phone history of a suspect with a valid warrant, but such information cannot generally be used for further contact chaining.
+
+\subsubsection{Desired Outputs and Privacy Properties}
+
+The goal of the protocol is for the agencies to obtain a set of ciphertexts, each of which is the encryption of a phone number $v$ such that the distance in the communication graph from $v$ to the targeted phone number $x$ is at most $k$. The set should not contain encryptions of numbers $v$ such that each path from $x$ to $v$ of length at most $k$ contains an intermediate vertex of degree greater than $d$; the ``intermediate'' vertices in a path are all vertices except the endpoints $x$ and $v$.
+
+
+
+Every phone number in this set must be encrypted with each of the agencies' public ElGamal keys. The agencies should all have the same output.
+
+The telecoms should not learn the agency's output. Instead, each telecom's output should contain only a list of which of the phone numbers it serves were sent to the government agencies. This allows the telecoms to play an additional accountability role. 
+
+With the encryptions of these phone numbers, the agencies can act as appropriate to further investigate them. In particular, the set of encrypted phone numbers can be intersected with, say, the encrypted numbers of people on a terrorist
+watch list~\cite{sff-foci2014}.
+
+In the basic protocol presented here, the agencies and telecoms learn some additional information. Specifically, the agencies learn which provider serves each encrypted phone number in the output set and the distance from $x$ of each encrypted phone number. Each telecom learns which of the phone numbers it serves appear in the agencies' output, as well as the distance of each of those phone numbers from the target phone number $x$.
+In \cite[Section 4.1.5]{sff-TR}, we present a modified version of the protocol that uses a DC-net-based anonymity subprotocol to prevent the agencies from learning which telecom serves which encrypted phone numbers.
+
+As long as our security assumptions hold, the agencies collectively learn \emph{no} information about the edge set $E$ except what is implied by the output. Furthermore, the agencies cannot learn any of the phone numbers that appear in encrypted form in the output (unless implied by the size of the encrypted output and the leaked service information), nor can agencies cause a phone number not within distance $k$ of $x$ to appear in the output, even in encrypted form.
+
+\subsubsection{Lawful Contact-Chaining Protocol}
+
+\label{sec-proto1}
+
+The protocol below amounts to a distributed breadth-first search of the communication graph run by the agencies making queries of the telecoms. However, all messages the agencies receive from the telecoms will be encrypted. 
+Let $\Enc_T(m)$ be the encryption of message $m$ under telecom $T$'s public key. Call such an encryption a \emph{telecom ciphertext}. Let $\Enc_\mathcal{A}(m)$ be the encryption of $m$ under the public keys of all agencies, and call such an encryption an \emph{agency ciphertext}.
+
+To manage the breadth-first search, the agencies (or at least the investigating agency) will maintain a queue $\mathbf{Q}$, containing vertices yet to explore. $\mathbf{Q}$ contains tuples for unexplored vertices $a$ of the form $(\Enc_{T(a)}(a), T(a), j)$. These tuples contain the telecom ciphertext for $a$, a record of which telecom owns $a$, and an integer $j$ indicating the remaining distance from $a$ still to be covered by the search.
+
+The agencies will represent their output as a list $\mathbf{C}$, containing agency ciphertexts. Each telecom $T$ will represent its output as a list $\mathbf{L}_T$, listing plaintext users served by that telecom whose information the agencies requested.  The protocol is as follows:
+
+\begin{compactenum}
+
+\item The agencies start by agreeing upon a warrant $(x, k, d)$. 
+They encrypt $x$ under the public key of $T(x)$.
+
+\item The agencies initialize $\mathbf{Q}$ to contain 
+$(\Enc_{T(x)}(x), T(x), k)$.
+
+\item The agencies initialize the output list $\mathbf{C}$ to be empty.
+
+\item Each telecom $T$ initializes its output list $\mathbf{L}_T$ to be empty.
+
+\item While $\mathbf{Q}$ is not empty, do the following:
+
+\begin{compactenum}
+
+\item \label{proto1:top-of-loop} The agencies dequeue $(\Enc_{T(a)}(a), T(a), j)$ from $\mathbf{Q}$. They send the pair ($\Enc_{T(a)}(a), j)$ to $T(a)$.
+
+\item $a$'s provider, $T(a)$, decrypts $a$ from its telecom ciphertext. It adds $a$ to $\mathbf{L}_T$.
+
+\item \label{proto1:first-send} $T(a)$ encrypts $a$ under the agencies' public keys, and sends $\Enc_\mathcal{A}(a)$ to the agencies.
+
+\item If $j=0$, $T(a)$ is done. Go to step \ref{proto1:receive}.
+
+\item Otherwise, $T(a)$ encrypts each neighbor $b$ of $a$ under the public key of $T(b)$, creating a telecom ciphertext for $b$.
+
+\item \label{proto1:second-send} $T(a)$ sends the number of ciphertexts generated this way, $\de(a)$, as well as all telecom ciphertexts generated in the previous step, to the agencies. $T(a)$ sends the ciphertexts in the form of pairs $(\Enc_{T(b)}(b), T(b))$.
+
+\item \label{proto1:receive} The agencies add $\Enc_\mathcal{A}(a)$ to $\mathbf{C}$.
+
+\item If $\de(a)>d$ and $j\neq k$ (i.e. $a\neq x$), the agencies discard all telecom ciphertexts received for $a$'s neighbors (i.e., agencies refuse to sign these ciphertexts in future steps of the protocol, and do not send them on to the telecoms).
+
+\item Otherwise, for each telecom ciphertext received, the agencies add $(\Enc_{T(b)}(b), T(b), j-1)$ to $\mathbf{Q}$.
+
+\end{compactenum}
+
+\item The agencies' final output is the list $\mathbf{C}$. Each telecom $T$'s final output is $\mathbf{L}_T$.
+
+\end{compactenum}
+
+Note that the inner loop can be executed many times in parallel, up to the point of completely emptying $\mathbf{Q}$ at the beginning of the loop. Many messages to the same telecom can also be batched and sent together, thereby reducing the number of signing and verifying operations so that they depend only on $k$ and not on the size of the input or output.
+
+Correctness and privacy of the basic protocol are argued 
+in~\cite[Section 4.2]{sff-TR}.
+
+\subsection{Performance of Privacy-Preserving Contact Chaining Protocol}
+
+We implemented the basic protocol in Java and tested the implementation's 
+running time, CPU time used, and data sent over the network. 
+Our implementation uses the variant of our protocol in which the agencies 
+completely exhaust the search queue $\mathbf{Q}$ each round, 
+sending all queries at any given distance from $x$ to the 
+telecoms at once in batches. This variant allows for greater parallelism. 
+All of the telecoms receive their batch of queries at the same time and 
+operate on those queries using eight parallel threads of computation.
+
+We use 2048-bit DSA signatures, 2048-bit RSA encryption for the telecoms, 
+and ElGamal encryption for the agencies' output. 
+Our Java program supports any number of agencies and telecoms, but we chose to run tests with three government agencies and four telecoms. 
+
+For our underlying communication graph, we used an a\-no\-ny\-mized data set of 1.6 million users from Pokec, a Slovakian social network~\cite{snapnets}. To replicate the multi-provider environment, we assigned each user to one of four telecom servers. The telecoms were each given a different number of the users, in proportion to the subscriber base of the largest four telecoms in the world~\cite{mobiforge}.
+
+These results are important in evaluating how practical our lawful contact-chaining protocol would be it were put into practice by government agencies and telecoms. However, our data set is relatively small compared to the data\-ba\-ses held by real telecommunications companies, and each company handles that data using different technologies. The absolute running time and CPU usage of executing this protocol could vary from telecom to telecom. Therefore, we also produced a implementation of the contact-chaining protocol which omits all cryptographic operations. This version of the protocol does not preserve the privacy of users. By comparing the performance of our lawful contact-chaining protocol with the zero-cryptography contact-chaining protocol, however, we can get a sense of the ``cost of privacy and accountability.'' 
+
+Additional detail about our Java implementation and experimental setup can be found in \cite[Section 4.3]{sff-TR}.
+
+\subsubsection{Results}
+
+%NOTE: Adding blank lines to this environment will interfere with the formatting.
+\begin{figure*}[t]
+\centering
+\begin{subfigure}{0.66\columnwidth}
+\centering
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={Protocol Runtime},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Running Time [min]},
+	ylabel style={overlay},
+	ticklabel style = {font=\large},
+	xmin=10, xmax=1000000,
+	ymin=0.01, ymax=100,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	%log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingrsa.csv};	
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=RunningTime, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{Protocol Runtime}
+\label{fig:runtime}
+\end{subfigure}\hfill
+\begin{subfigure}{0.66\columnwidth}
+\centering
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={All-Telecom CPU Time},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Total CPU Time [min]},
+	ylabel style={overlay, anchor=north,},
+	ticklabel style = {font=\large},
+	xmin=10, xmax=1000000,
+	ymin=0.1, ymax=1000,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	%log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingrsa.csv};
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=CPUTime, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{CPU Time}
+\label{fig:cputime}
+\end{subfigure}\hfill
+\begin{subfigure}{0.66\columnwidth}
+\centering
+\begin{tikzpicture}[scale=0.66]
+\begin{loglogaxis}[
+	title={Data transferred},
+	title style={font=\Large,},
+	xlabel={Ciphertexts in Result},
+	ylabel={Data transferred [MB]},
+	ylabel style={overlay, anchor=north,},
+	ticklabel style = {font=\large},
+	xmin=10, xmax=1000000,
+	ymin=0.1, ymax=10000,
+	%xtick={10, 100, 1000, 10000, 100000},
+	%ytick={0.01, 0.1, 1, 10, 100, 1000},
+	%log ticks with fixed point,
+	legend pos=north west,
+	ymajorgrids=true,
+	xmajorgrids=true,
+	grid style=dashed,
+	legend style={cells={anchor=west}},
+]
+\addplot[
+	color=blue,
+	mark=o,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingrsa.csv};	
+\addplot[
+	color=red,
+	mark=square,
+	only marks,
+	mark size=1.5pt,
+	]
+	table [x=Ciphertexts, y=Bytes, col sep=comma] {chainingnocrypto.csv};
+\legend{Lawful contact-chaining, Zero-crypto}
+\end{loglogaxis}
+\end{tikzpicture}
+%\captionsetup{justification=centering}
+%\caption{Network Data}
+\label{fig:data}
+\end{subfigure}
+\captionsetup{justification=centering}
+\caption{Performance of Lawful Contact-Chaining}
+\label{fig:performance}
+\end{figure*}
+
+Our implementation of lawful contact-chaining performed well. Our experiments showed a linear relationship between the number of ciphertexts in the output and the running time, CPU time, and data usage of the protocol. We display graphs of our recorded data in Figure~\ref{fig:performance}. 
+%Taking the average of all cases with $d>25$, the telecoms used 58.2 ms of CPU time per ciphertext. The agencies used, again in the average case, 2.0 ms of CPU time per ciphertext. Note that these times are the sums taken over all telecoms and all agencies respectively. Because the agencies have do very little cryptography in this protocol, we focus on the telecoms' CPU time in our evaluation. 
+
+We found that our protocol was able to process, in the average case, 197.4 ciphertexts per second. To return to our example from earlier of a network with an average of 30 contacts per user, a lawful contact-chaining search with $k=2$ would have 900 users in the output, and a search with $k=3$ would have 27,000 users in the output. To compare these times to some of our actual experiments, we found that a search that returned 937 ciphertexts took 6.86 seconds to run, and a search that returned 27,338 ciphertexts took 109.55 seconds to run. 
+%To provide another point of comparison, recall that, in~\cite{sff-foci2014}, we studied the ``High Country Bandits'' case, in which the FBI performed an intersection of 150,000 phone number to help solve a series of bank robberies. In one of our experiments with lawful contact chaining, we find that a similarly sized data set of 149,535 ciphertexts took 625.08 seconds - 10.4 minutes - to compile with our protocol. Given the context of a criminal investigation, we feel these running times are quite reasonable. 
+
+The zero-cryptography version of our program ran, predictably, more quickly than the lawful privacy-preserving version. The total CPU time across all telecoms needed for our zero-crypto implementation never rose above ten seconds, even in the largest cases. 
+%This result allows us to disambiguate the cost of \emph{information retrieval} from \emph{privacy protection}. The linear relationship between the size of the encrypted user data set and the performance in terms of running time, CPU time, and network data usage of the protocol all remain even when we subrtract out the time to run all non-cryptgraphic parts of the protocol. 
+We conclude that, even given the scale of database operations that real 
+telecoms perform, the cost of adding privacy-preservation to the contact-chaining protocol is reasonable.
+
+More detailed performance analysis is presented in~\cite[Section 4.3]{sff-TR}.

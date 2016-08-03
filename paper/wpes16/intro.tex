@@ -1,0 +1,78 @@
+\section{Introduction}\label{sec-introduction}
+As networked devices become more available, more capable, and more ubiquitous
+in everyday life, tension mounts between users' desire to safeguard their 
+personal information and government agencies' desire to use that personal 
+information in their pursuit of criminals and terrorists.  Many people assert
+that we are faced with an unpleasant, stark choice: Citizens can either have
+control over their personal information, or they can have
+law-enforcement and intelligence agencies with the tools that they need to
+keep the country safe. We regard this stark choice as a false dichotomy and 
+assert that, by deploying appropriate technology in the context of 
+sound policy and the rule of law, we can have both privacy and security.
+
+In this paper, we continue the development of accountable, privacy-preserving 
+surveillance that we began in~\cite{sff-foci2014}. We require that government 
+surveillance be conducted according to {\it open processes}, {\it i.e.}, 
+unclassified procedures laid out in public laws that all citizens have the
+right to read, to understand, and to challenge through the politicial process;
+procedures that do not have these properties are referred to as {\it secret
+processes}.  We distinguish between {\it targeted users}, who are 
+under suspicion and the targets of properly authorized warrants, and
+{\it untargeted users}; the latter are the vast majority of all 
+users in any general-purpose, mass-communication system, and their private
+information must be protected from government scrutiny. In \cite{sff-foci2014},
+we applied these principles to the problem of {\it set intersection}. 
+
+We now apply them to {\it contact chaining}.
+The goal is to use the topology of a {\it communication 
+graph} ({\it e.g.}, a phone-call graph, email graph, or social network) 
+to identify associates (or ``contacts'') of 
+lawfully targeted users~\cite{techdirt}. 
+Government agencies can then investigate those associates to determine whether
+they deserve further attention.
+It is useful to consider both direct contacts, 
+{\it i.e.}, users who are neighbors in the communication graph, and
+extended contacts, {\it i.e.}, users who are at distance $k$ in the 
+communication graph, for an appropriate constant $k$.
+%In a phone-call graph, if Alice calls Bob, 
+%and Bob calls Charlie, then Alice and Bob are direct contacts (as are Bob and 
+%Charlie), but Alice and Charlie are extended contacts (more precisely,
+%contacts at distance 2).  
+Without accountability and security mechanisms to
+limit an investigation's scope, contact chaining in a mass-communication
+network can sweep in a huge number of untargeted users.
+In Section~\ref{sec-chaining}, we provide an accountable contact-chaining
+protocol that bounds the scope of the search, uses encryption to protect 
+untargeted users, and is computationally efficient (in that its time
+complexity and communication complexity are both linear in the size of the 
+output).
+
+We posit that the
+{\it Openness Principle} put forth in \cite{sff-foci2014} 
+should govern all surveillance activity in a democracy.
+\begin{compactenum}
+\item[I]
+Any surveillance or law-enforcement process
+that obtains or uses private information
+about untargeted users shall be
+an open, public, unclassified process.
+\item[II]
+Any secret surveillance or law-enforcement processes shall use only:
+\begin{compactenum}
+\item[(a)] public information and
+\item[(b)] private information about targeted users obtained under 
+authorized warrants via open surveillance processes.
+\end{compactenum}
+\end{compactenum}
+This principle can be viewed as a requirement that an open
+``privacy firewall'' be placed between government agencies and citizens'
+private information in a mass-communication network.  Processes that move
+untargeted users' private information through the firewall must be open
+processes.  
+
+We briefly present our contact-chaining results in 
+Section~\ref{sec-chaining} and our open questions and future directions
+in Section~\ref{sec-future}.  More detail on the Openness
+Principle, our results on contact chaining and set intersection, related 
+work by others, and future directions can be found in 
+\cite{sff-TR,sff-foci2014}.

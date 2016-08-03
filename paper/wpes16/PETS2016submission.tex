@@ -1,0 +1,135 @@
+%\documentclass[USenglish,oneside,twocolumn]{article}
+\documentclass{sig-alternate-05-2015}
+
+\usepackage{etex}
+\usepackage[utf8]{inputenc}%(only for the pdftex engine)
+%\RequirePackage[no-math]{fontspec}%(only for the luatex or the xetex engine)
+%\usepackage[big]{dgruyter_NEW}
+\usepackage{amsmath}
+\usepackage{hyperref}
+ 
+%\DOI{foobar}
+
+%\cclogo{\includegraphics{by-nc-nd.pdf}}
+
+\DeclareMathOperator{\Enc}{Enc}
+
+\DeclareMathOperator{\Dec}{Dec}
+
+\DeclareMathOperator{\de}{deg}
+
+\usepackage{subcaption}
+\usepackage{pgfplots}
+ 
+ 
+  \title{Open, privacy-preserving protocols for lawful surveillance}
+  \author{
+	Aaron Segal and Joan Feigenbaum \\
+	Yale University \\
+	New Haven, CT, USA\\
+	\{aaron.segal,joan.feigenbaum\}@yale.edu\\
+	\and
+	Bryan Ford \\
+	Swiss Federal Institute of Technology (EPFL) \\
+	Lausanne, Switzerland\\
+	bryan.ford@epfl.ch}
+  \date{}
+
+  %\author*[1]{Aaron Segal}
+  %\author[1]{Names withheld}
+
+  %\author[2]{Bryan Ford}
+
+  %\author[3]{Joan Feigenbaum}
+
+  %\affil[1]{Yale Univ., E-mail: Aaron.Segal@yale.edu}
+  %\affil[1]{Affiliations and email addresses withheld}
+
+  %\affil[2]{EPFL, E-mail: Bryan.Ford@epfl.ch}
+
+  %\affil[3]{Yale Univ., E-mail: Joan.Feigenbaum@yale.edu}
+
+  %\title{\huge Open, privacy-preserving protocols for lawful surveillance}
+
+  %\runningtitle{Privacy-preserving, lawful surveillance}
+
+  %\subtitle{...}
+
+\begin{document}
+
+\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+% DOI
+%\doi{10.475/123_4}
+
+% ISBN
+%\isbn{123-4567-24-567/08/06}
+
+%Conference
+\conferenceinfo{WPES '16}{October 24, 2016, Vienna, Austria}
+
+%\acmPrice{\$15.00}
+
+
+\maketitle
+ 
+  \begin{abstract}
+{The question of how government agencies can
+acquire actionable, useful information about legitimate but unknown targets 
+without intruding upon the electronic activity of innocent parties is 
+extremely important.  We address this question by providing experimental
+evidence that actionable, useful information can indeed be obtained in a manner
+that preserves the privacy of innocent parties and that holds government
+agencies accountable.  In particular, we present practical, privacy-preserving
+protocols for two operations that law-enforcement and intelligence agencies
+have used effectively: {\it set intersection} and {\it contact chaining}.
+Experiments with our protocols suggest
+that privacy-preserving contact chaining can perform
+a 3-hop privacy-preserving graph traversal producing 27,000 ciphertexts
+in under two minutes.
+These ciphertexts are usable in turn via privacy-preserving set
+intersection to pinpoint potential unknown targets within a body of 150,000
+total ciphertexts within 10 minutes,
+without exposing personal information about non-targets.
+}
+  \end{abstract}
+
+\keywords{Privacy, Secure multiparty computation, Surveillance}
+
+%  \classification[PACS]{}
+ % \communicated{...}
+ % \dedication{...}
+
+  %\journalname{Proceedings on Privacy Enhancing Technologies}
+  %\DOI{Editor to enter DOI}
+  %\startpage{1}
+  %\received{February 29, 2016}
+  %\revised{..}
+  %\accepted{..}
+
+  %\journalyear{2016}
+  %\journalvolume{2016}
+  %\journalissue{4}
+
+\input{intro}
+\input{open}
+\input{intersection}
+\input{chaining}
+\input{related}
+\input{conc}
+%\input{acks}
+
+%% ###################################################################
+\bibliography{chaining}
+\bibliographystyle{plain}
+
+
+\end{document}
+
+
