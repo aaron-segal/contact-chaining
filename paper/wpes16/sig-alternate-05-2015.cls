@@ -735,7 +735,7 @@
  \let\maketitle\relax
  \let\@maketitle\relax
  \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\gdef\@subtitle{}\let\thanks\relax
-}%	XXX submission version \@copyrightspace}
+ \@copyrightspace}
 
 %% CHANGES ON NEXT LINES
 \newif\if@ll % to record which version of LaTeX is in use
@@ -902,7 +902,7 @@
     \vskip 2em               % Vertical space after author.
    \end{center}}
  \dimen0=\ht\@acmtitlebox
- \advance\dimen0 by -12.75pc\relax % Increased space for title box -- KBT
+ \advance\dimen0 by -9.75pc\relax % Increased space for title box -- KBT
  \unvbox\@acmtitlebox
  \ifdim\dimen0<0.0pt\relax\vskip-\dimen0\fi}
 \fi
@@ -1033,7 +1033,7 @@
 \begin{center}
 \setlength{\unitlength}{1pc}
 \ifnum\ACM@basesize=9
-\begin{picture}(20,6) %Space for copyright notice
+\begin{picture}(20,5.5) %Space for copyright notice
 \put(0,-0.95){\crnotice{\@toappear}}
 \end{picture}
 \fi
@@ -1203,16 +1203,16 @@
         {4\p@}{\normalsize\@ucheadtrue}%
 }
 \def\section{%
-    \@startsection{section}{1}{\z@}{-10\p@ \@plus -4\p@ \@minus -2\p@}% GM
+    \@startsection{section}{1}{\z@}{-9\p@ \@plus -4\p@ \@minus -2\p@}% GM
     {4\p@}{\baselineskip 14pt\secfnt\@ucheadtrue}%
 }
 
 \def\subsection{%
-    \@startsection{subsection}{2}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}
+    \@startsection{subsection}{2}{\z@}{-7\p@ \@plus -2\p@ \@minus -\p@}
     {4\p@}{\secfnt}%
 }
 \def\subsubsection{%
-    \@startsection{subsubsection}{3}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+    \@startsection{subsubsection}{3}{\z@}{-6\p@ \@plus -2\p@ \@minus -\p@}%
     {4\p@}{\subsecfnt}%
 }
 %\def\paragraph{%
@@ -1502,7 +1502,7 @@
 \ifnum\addauflag=0\addauthorsection\global\addauflag=1\fi
      \section[References]{%    <=== OPTIONAL ARGUMENT ADDED HERE
         {References} % was uppercased but this affects pdf bookmarks (SP/GM October 2004)
-          {\vskip -9pt plus 1pt} % GM Nov. 2006 / GM July 2000 (for somewhat tighter spacing) 
+          {\vskip -0pt plus 1pt} % GM Nov. 2006 / GM July 2000 (for somewhat tighter spacing) 
          \@mkboth{{\refname}}{{\refname}}%
      }%
      \list{[\arabic{enumi}]}{%
